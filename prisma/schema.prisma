@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  project     Project  @default(PERSONAL)
+  status      Status   @default(BACKLOG)
+  priority    Priority @default(MEDIUM)
+  sopId       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  runs        AgentRun[]
+}
+
+model AgentRun {
+  id         String    @id @default(cuid())
+  taskId     String
+  task       Task      @relation(fields: [taskId], references: [id])
+  status     RunStatus @default(PENDING)
+  model      String    @default("anthropic/claude-opus-4-6")
+  costUsd    Float?
+  tokenCount Int?
+  output     String?
+  startedAt  DateTime  @default(now())
+  endedAt    DateTime?
+}
+
+enum Project {
+  LAUREL
+  PERSONAL
+  SIDE
+  LIFE
+}
+
+enum Status {
+  BACKLOG
+  TODO
+  IN_PROGRESS
+  DONE
+  BLOCKED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum RunStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  STOPPED
+}
