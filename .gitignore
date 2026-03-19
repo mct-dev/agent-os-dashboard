@@ -33,6 +33,11 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 !.env.local.example
+!.env.example
+
+# bridge node_modules (bridge source is committed)
+bridge/node_modules
+bridge/.env
 
 # vercel
 .vercel

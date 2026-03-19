@@ -55,6 +55,17 @@ enum Priority {
   URGENT
 }
 
+model UserSettings {
+  id                 String   @id @default(cuid())
+  userId             String   @unique // email (from Google OAuth)
+  bridgeUrl          String?  // e.g. https://macbook-pro.tailf13a13.ts.net
+  bridgeApiKey       String?  // encrypted API key
+  bridgeName         String?  // friendly name e.g. "Work MacBook"
+  onboardingComplete Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
 enum RunStatus {
   PENDING
   RUNNING

@@ -10,6 +10,7 @@ import { InboxPage } from "@/components/inbox-page"
 import { SOPsPage } from "@/components/sops-page"
 import { AgentsPage } from "@/components/agents-page"
 import { ProjectsPage } from "@/components/projects-page"
+import { SettingsPage } from "@/components/settings-page"
 import type { Task, Project, InboxItem, AgentConfig } from "@/lib/types"
 import type { SOP } from "@/lib/sops"
 
@@ -35,16 +36,7 @@ export default function Dashboard() {
       case "agents":
         return <AgentsPage />
       case "settings":
-        return (
-          <div className="flex flex-col h-screen">
-            <header className="shrink-0 border-b border-border px-6 py-3">
-              <h1 className="text-sm font-semibold text-foreground">Settings</h1>
-            </header>
-            <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-              Settings coming soon
-            </div>
-          </div>
-        )
+        return <SettingsPage />
       default:
         return <KanbanBoard />
     }

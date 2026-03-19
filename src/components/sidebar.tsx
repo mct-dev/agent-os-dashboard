@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 import { useAppState } from "@/lib/store"
 
@@ -11,6 +12,16 @@ interface SidebarProps {
 export function Sidebar({ activePage, onNavigate }: SidebarProps) {
   const { inbox } = useAppState()
   const unreadCount = inbox.filter((i) => !i.read).length
+  const [onboardingComplete, setOnboardingComplete] = useState(true)
+
+  useEffect(() => {
+    fetch("/api/user-settings")
+      .then((res) => res.json())
+      .then((data) => {
+        setOnboardingComplete(data.onboardingComplete ?? false)
+      })
+      .catch(() => {})
+  }, [])
 
   const navItems = [
     { id: "inbox", label: "Inbox", icon: "🔔", badge: unreadCount || undefined },
@@ -64,7 +75,10 @@ export function Sidebar({ activePage, onNavigate }: SidebarProps) {
           )}
         >
           <span className="text-sm w-5 text-center">⚙️</span>
-          <span>Settings</span>
+          <span className="flex-1 text-left">Settings</span>
+          {!onboardingComplete && (
+            <span className="text-amber-400 text-xs" title="Setup incomplete">⚠️</span>
+          )}
         </button>
       </div>
     </aside>

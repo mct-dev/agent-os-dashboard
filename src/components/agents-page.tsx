@@ -42,6 +42,13 @@ interface ModelOption {
   provider: string
 }
 
+interface BridgeInfo {
+  url?: string | null
+  name?: string | null
+  status: "checking" | "connected" | "disconnected" | "not-configured"
+  version?: string
+}
+
 const RUNTIMES = [
   {
     name: "Claude Code",
@@ -68,6 +75,53 @@ export function AgentsPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [models, setModels] = useState<ModelOption[]>([])
   const [modelsLoading, setModelsLoading] = useState(true)
+  const [bridge, setBridge] = useState<BridgeInfo>({ status: "checking" })
+
+  // Fetch bridge status
+  useEffect(() => {
+    fetch("/api/user-settings")
+      .then((res) => res.json())
+      .then(async (data) => {
+        if (!data.bridgeUrl) {
+          setBridge({ status: "not-configured" })
+          return
+        }
+        setBridge({ url: data.bridgeUrl, name: data.bridgeName, status: "checking" })
+        try {
+          const testRes = await fetch("/api/bridge-test", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ bridgeUrl: data.bridgeUrl, bridgeApiKey: data.bridgeApiKey }),
+          })
+          const testData = await testRes.json()
+          setBridge({
+            url: data.bridgeUrl,
+            name: data.bridgeName,
+            status: testData.ok ? "connected" : "disconnected",
+            version: testData.version,
+          })
+        } catch {
+          setBridge({ url: data.bridgeUrl, name: data.bridgeName, status: "disconnected" })
+        }
+      })
+      .catch(() => setBridge({ status: "not-configured" }))
+  }, [])
+
+  const testBridgeConnection = async () => {
+    if (!bridge.url) return
+    setBridge((prev) => ({ ...prev, status: "checking" }))
+    try {
+      const res = await fetch("/api/bridge-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bridgeUrl: bridge.url, bridgeApiKey: "" }),
+      })
+      const data = await res.json()
+      setBridge((prev) => ({ ...prev, status: data.ok ? "connected" : "disconnected", version: data.version }))
+    } catch {
+      setBridge((prev) => ({ ...prev, status: "disconnected" }))
+    }
+  }
 
   useEffect(() => {
     setModelsLoading(true)
@@ -190,6 +244,61 @@ export function AgentsPage() {
           </div>
         </section>
 
+        {/* Bridge Status */}
+        <section>
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            Bridge
+          </h2>
+          <div className="bg-card border border-border rounded-lg p-4 mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🌉</span>
+                <h3 className="text-sm font-medium text-foreground">
+                  {bridge.name || "Local Bridge"}
+                </h3>
+              </div>
+              <Badge
+                variant={bridge.status === "connected" ? "default" : bridge.status === "not-configured" ? "secondary" : "destructive"}
+                className={bridge.status === "connected" ? "bg-green-600/20 text-green-400 border-green-600/30" : ""}
+              >
+                {bridge.status === "checking" && "Checking..."}
+                {bridge.status === "connected" && "🟢 Connected"}
+                {bridge.status === "disconnected" && "🔴 Disconnected"}
+                {bridge.status === "not-configured" && "⚙ Not configured"}
+              </Badge>
+            </div>
+            {bridge.url && (
+              <div className="space-y-1.5 text-xs text-muted-foreground mb-3">
+                <div className="flex justify-between">
+                  <span>URL</span>
+                  <span className="text-foreground/60 font-mono">{bridge.url}</span>
+                </div>
+                {bridge.version && (
+                  <div className="flex justify-between">
+                    <span>Version</span>
+                    <span className="text-foreground/60 font-mono">{bridge.version}</span>
+                  </div>
+                )}
+              </div>
+            )}
+            {bridge.status === "not-configured" && (
+              <div className="bg-muted border border-border rounded-md p-2.5">
+                <p className="text-[11px] text-amber-300/70">
+                  ⚠ Bridge not configured
+                </p>
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  Go to Settings to configure your local bridge connection.
+                </p>
+              </div>
+            )}
+            {bridge.url && (
+              <Button variant="outline" size="sm" className="mt-2" onClick={testBridgeConnection} disabled={bridge.status === "checking"}>
+                Test Connection
+              </Button>
+            )}
+          </div>
+        </section>
+
         {/* Available Runtimes */}
         <section>
           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
@@ -204,8 +313,11 @@ export function AgentsPage() {
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-lg">{runtime.icon}</span>
                   <h3 className="text-sm font-medium text-foreground">{runtime.name}</h3>
-                  <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-5 ml-auto">
-                    Offline
+                  <Badge
+                    variant={bridge.status === "connected" ? "default" : "destructive"}
+                    className={`text-[10px] px-1.5 py-0 h-5 ml-auto ${bridge.status === "connected" ? "bg-green-600/20 text-green-400 border-green-600/30" : ""}`}
+                  >
+                    {bridge.status === "connected" ? "Online" : "Offline"}
                   </Badge>
                 </div>
                 <div className="space-y-1.5 text-xs text-muted-foreground mb-3">
@@ -222,14 +334,16 @@ export function AgentsPage() {
                     <span className="text-foreground/60">—</span>
                   </div>
                 </div>
-                <div className="bg-muted border border-border rounded-md p-2.5">
-                  <p className="text-[11px] text-amber-300/70">
-                    ⚠ Runtime bridge: Not configured
-                  </p>
-                  <p className="text-[10px] text-muted-foreground mt-1">
-                    A local bridge is required to connect Vercel to your machine&apos;s runtime. Connect via local bridge to sync skills.
-                  </p>
-                </div>
+                {bridge.status !== "connected" && (
+                  <div className="bg-muted border border-border rounded-md p-2.5">
+                    <p className="text-[11px] text-amber-300/70">
+                      ⚠ Runtime bridge: {bridge.status === "not-configured" ? "Not configured" : "Disconnected"}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      A local bridge is required to connect Vercel to your machine&apos;s runtime. Connect via local bridge to sync skills.
+                    </p>
+                  </div>
+                )}
               </div>
             ))}
           </div>
