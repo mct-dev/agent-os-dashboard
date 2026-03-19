@@ -1,0 +1,157 @@
+"use client"
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { useAppState } from "@/lib/store"
+import { SOPS } from "@/lib/sops"
+import { nextTaskId } from "@/lib/mock-data"
+import type { Priority, Status, Task } from "@/lib/types"
+
+export function NewTaskDialog() {
+  const { projects, setTasks } = useAppState()
+  const [open, setOpen] = useState(false)
+  const [title, setTitle] = useState("")
+  const [description, setDescription] = useState("")
+  const [projectId, setProjectId] = useState(projects[0]?.id ?? "")
+  const [priority, setPriority] = useState<Priority>("MEDIUM")
+  const [sopId, setSopId] = useState<string>("none")
+
+  const handleCreate = () => {
+    if (!title.trim()) return
+    const now = new Date().toISOString()
+    const newTask: Task = {
+      id: nextTaskId(),
+      title: title.trim(),
+      description: description.trim() || null,
+      projectId,
+      status: "TODO" as Status,
+      priority,
+      sopId: sopId === "none" ? null : sopId,
+      createdAt: now,
+      updatedAt: now,
+      runs: [],
+    }
+    setTasks((prev) => [newTask, ...prev])
+    setTitle("")
+    setDescription("")
+    setPriority("MEDIUM")
+    setSopId("none")
+    setOpen(false)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-8">
+          + New Issue
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="bg-[#0f0f0f] border-white/[0.06]">
+        <DialogHeader>
+          <DialogTitle className="text-white">New Issue</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div>
+            <Input
+              placeholder="Issue title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="bg-white/[0.03] border-white/[0.06]"
+              autoFocus
+            />
+          </div>
+          <div>
+            <Textarea
+              placeholder="Add description..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="bg-white/[0.03] border-white/[0.06] resize-none"
+              rows={3}
+            />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <Select value={projectId} onValueChange={setProjectId}>
+              <SelectTrigger className="h-8 text-xs bg-transparent border-white/10">
+                <SelectValue placeholder="Project" />
+              </SelectTrigger>
+              <SelectContent>
+                {projects.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.emoji} {p.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={priority} onValueChange={(v) => setPriority(v as Priority)}>
+              <SelectTrigger className="h-8 text-xs bg-transparent border-white/10">
+                <SelectValue placeholder="Priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="URGENT">⬆ Urgent</SelectItem>
+                <SelectItem value="HIGH">↑ High</SelectItem>
+                <SelectItem value="MEDIUM">→ Medium</SelectItem>
+                <SelectItem value="LOW">↓ Low</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={sopId} onValueChange={setSopId}>
+              <SelectTrigger className="h-8 text-xs bg-transparent border-white/10">
+                <SelectValue placeholder="SOP" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">No SOP</SelectItem>
+                {SOPS.map((sop) => (
+                  <SelectItem key={sop.id} value={sop.id}>
+                    {sop.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* SOP Preview */}
+          {sopId !== "none" && (
+            <div className="bg-white/[0.03] rounded-md p-3 border border-white/[0.04]">
+              <p className="text-[11px] text-white/40 mb-1.5">Pipeline stages:</p>
+              <div className="flex items-center gap-1 flex-wrap">
+                {SOPS.find((s) => s.id === sopId)?.stages.map((stage, i) => (
+                  <span key={stage.id} className="flex items-center gap-1">
+                    <span className="text-[11px] text-white/60 bg-white/[0.06] px-1.5 py-0.5 rounded">
+                      {stage.name}
+                    </span>
+                    {i < (SOPS.find((s) => s.id === sopId)?.stages.length ?? 0) - 1 && (
+                      <span className="text-white/20 text-[10px]">→</span>
+                    )}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700 text-white">
+            Create Issue
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}

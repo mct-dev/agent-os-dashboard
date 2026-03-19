@@ -1,0 +1,167 @@
+"use client"
+
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { useAppState } from "@/lib/store"
+import { PRIORITY_CONFIG } from "@/lib/types"
+
+export function InboxPage() {
+  const { inbox, setInbox } = useAppState()
+  const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  const [replyText, setReplyText] = useState("")
+
+  const sortedItems = [...inbox].sort((a, b) => {
+    if (a.read !== b.read) return a.read ? 1 : -1
+    return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  })
+
+  const markRead = (id: string) => {
+    setInbox((prev) => prev.map((i) => (i.id === id ? { ...i, read: true } : i)))
+  }
+
+  const dismiss = (id: string) => {
+    setInbox((prev) => prev.filter((i) => i.id !== id))
+  }
+
+  const snooze = (id: string) => {
+    const snoozedUntil = new Date(Date.now() + 60 * 60 * 1000).toISOString()
+    setInbox((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, snoozedUntil, read: true } : i))
+    )
+  }
+
+  const handleReply = (id: string) => {
+    if (!replyText.trim()) return
+    // In a real app, this would POST to the API
+    dismiss(id)
+    setReplyingTo(null)
+    setReplyText("")
+  }
+
+  return (
+    <div className="flex flex-col h-screen">
+      <header className="shrink-0 border-b border-white/[0.06] px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <h1 className="text-sm font-semibold text-white">Inbox</h1>
+          <span className="text-[11px] text-white/30">
+            {inbox.filter((i) => !i.read).length} unread
+          </span>
+        </div>
+      </header>
+
+      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+        {sortedItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-64 text-white/30">
+            <span className="text-3xl mb-3">🎉</span>
+            <p className="text-sm">All clear — no pending items</p>
+          </div>
+        ) : (
+          sortedItems.map((item) => {
+            const priority = PRIORITY_CONFIG[item.priority]
+            return (
+              <div
+                key={item.id}
+                className={`bg-[#141414] border rounded-lg p-4 transition-all ${
+                  item.read ? "border-white/[0.04] opacity-60" : "border-white/[0.08]"
+                }`}
+                onClick={() => markRead(item.id)}
+              >
+                <div className="flex items-start gap-3">
+                  {/* Unread dot */}
+                  <div className="pt-1.5 shrink-0">
+                    {!item.read && <span className="block w-2 h-2 rounded-full bg-blue-400" />}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    {/* Header */}
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-medium text-white/80">🤖 {item.agentName}</span>
+                      <span className="text-[11px] text-white/30">on</span>
+                      <span className="text-xs text-white/50 truncate">{item.taskTitle}</span>
+                      <Badge
+                        variant="outline"
+                        className={`text-[10px] px-1.5 py-0 h-5 ml-auto shrink-0 ${
+                          item.priority === "URGENT" ? "bg-red-500/10 text-red-300 border-red-500/20" :
+                          item.priority === "HIGH" ? "bg-orange-500/10 text-orange-300 border-orange-500/20" :
+                          "bg-white/5 text-white/40 border-white/10"
+                        }`}
+                      >
+                        {priority.icon} {priority.label}
+                      </Badge>
+                    </div>
+
+                    {/* Question */}
+                    <p className="text-[13px] text-white/70 leading-relaxed mb-3">
+                      {item.question}
+                    </p>
+
+                    {/* Reply area */}
+                    {replyingTo === item.id ? (
+                      <div className="flex gap-2 mb-2">
+                        <Input
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          placeholder="Type your reply..."
+                          className="flex-1 h-8 text-xs bg-white/[0.03] border-white/[0.06]"
+                          autoFocus
+                          onKeyDown={(e) => { if (e.key === "Enter") handleReply(item.id) }}
+                        />
+                        <Button
+                          size="sm"
+                          className="h-8 text-xs bg-blue-600 hover:bg-blue-700"
+                          onClick={() => handleReply(item.id)}
+                        >
+                          Send
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 text-xs text-white/40"
+                          onClick={() => { setReplyingTo(null); setReplyText("") }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-6 text-[11px] border-white/10 text-white/50 hover:text-white"
+                          onClick={(e) => { e.stopPropagation(); setReplyingTo(item.id) }}
+                        >
+                          Reply
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 text-[11px] text-white/30"
+                          onClick={(e) => { e.stopPropagation(); snooze(item.id) }}
+                        >
+                          Snooze 1h
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 text-[11px] text-white/30"
+                          onClick={(e) => { e.stopPropagation(); dismiss(item.id) }}
+                        >
+                          Dismiss
+                        </Button>
+                        <span className="ml-auto text-[10px] text-white/20">
+                          {new Date(item.timestamp).toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )
+          })
+        )}
+      </div>
+    </div>
+  )
+}
