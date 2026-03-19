@@ -21,11 +21,11 @@ export function Sidebar({ activePage, onNavigate }: SidebarProps) {
   ]
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-[220px] bg-[#0a0a0a] border-r border-white/[0.06] flex flex-col z-50">
+    <aside className="fixed left-0 top-0 bottom-0 w-[220px] bg-sidebar border-r border-sidebar-border flex flex-col z-50">
       {/* Logo */}
       <div className="px-4 py-5 flex items-center gap-2">
         <span className="text-lg">⚡</span>
-        <span className="font-semibold text-sm tracking-tight text-white">Agent OS</span>
+        <span className="font-semibold text-sm tracking-tight text-sidebar-foreground">Agent OS</span>
       </div>
 
       {/* Nav */}
@@ -37,14 +37,14 @@ export function Sidebar({ activePage, onNavigate }: SidebarProps) {
             className={cn(
               "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-[13px] transition-colors",
               activePage === item.id
-                ? "bg-white/[0.08] text-white"
-                : "text-white/50 hover:text-white/80 hover:bg-white/[0.04]"
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/50 hover:text-sidebar-foreground/80 hover:bg-sidebar-accent/50"
             )}
           >
             <span className="text-sm w-5 text-center shrink-0">{item.icon}</span>
             <span className="flex-1 text-left">{item.label}</span>
             {item.badge && item.badge > 0 && (
-              <span className="bg-blue-500 text-white text-[10px] font-medium px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+              <span className="bg-primary text-primary-foreground text-[10px] font-medium px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                 {item.badge}
               </span>
             )}
@@ -59,8 +59,8 @@ export function Sidebar({ activePage, onNavigate }: SidebarProps) {
           className={cn(
             "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-[13px] transition-colors",
             activePage === "settings"
-              ? "bg-white/[0.08] text-white"
-              : "text-white/50 hover:text-white/80 hover:bg-white/[0.04]"
+              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+              : "text-sidebar-foreground/50 hover:text-sidebar-foreground/80 hover:bg-sidebar-accent/50"
           )}
         >
           <span className="text-sm w-5 text-center">⚙️</span>

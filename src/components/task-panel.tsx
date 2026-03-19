@@ -35,42 +35,39 @@ export function TaskPanel() {
 
   return (
     <Sheet open={!!task} onOpenChange={(open) => { if (!open) setSelectedTaskId(null) }}>
-      <SheetContent className="w-[480px] sm:w-[520px] bg-[#0f0f0f] border-white/[0.06] overflow-y-auto">
+      <SheetContent className="w-[480px] sm:w-[520px] overflow-y-auto">
         {task && (
           <>
             <SheetHeader className="pb-4">
-              <div className="flex items-center gap-2 text-white/30 text-xs font-mono mb-1">
+              <div className="flex items-center gap-2 text-muted-foreground text-xs font-mono mb-1">
                 <span>AGT-{task.id}</span>
                 <span className={PRIORITY_CONFIG[task.priority].color}>
                   {PRIORITY_CONFIG[task.priority].icon} {task.priority}
                 </span>
               </div>
-              <SheetTitle className="text-white text-lg">
+              <SheetTitle>
                 <Input
                   value={task.title}
                   onChange={(e) => updateTask({ title: e.target.value })}
-                  className="text-lg font-semibold bg-transparent border-none p-0 h-auto focus-visible:ring-0 text-white"
+                  className="text-lg font-semibold bg-transparent border-none p-0 h-auto focus-visible:ring-0"
                 />
               </SheetTitle>
             </SheetHeader>
 
             {/* Start Run */}
-            <Button
-              className="w-full mb-4 bg-blue-600 hover:bg-blue-700 text-white"
-              size="lg"
-            >
+            <Button className="w-full mb-4" size="lg">
               ▶ Start Run
             </Button>
 
             {/* Metadata */}
             <div className="space-y-3 mb-6">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-white/40 w-20">Status</span>
+                <span className="text-xs text-muted-foreground w-20">Status</span>
                 <Select
                   value={task.status}
                   onValueChange={(v) => updateTask({ status: v as Status })}
                 >
-                  <SelectTrigger className="h-7 text-xs w-40 bg-transparent border-white/10">
+                  <SelectTrigger className="h-7 text-xs w-40">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -87,12 +84,12 @@ export function TaskPanel() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-xs text-white/40 w-20">Priority</span>
+                <span className="text-xs text-muted-foreground w-20">Priority</span>
                 <Select
                   value={task.priority}
                   onValueChange={(v) => updateTask({ priority: v as Priority })}
                 >
-                  <SelectTrigger className="h-7 text-xs w-40 bg-transparent border-white/10">
+                  <SelectTrigger className="h-7 text-xs w-40">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -108,12 +105,12 @@ export function TaskPanel() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-xs text-white/40 w-20">Project</span>
+                <span className="text-xs text-muted-foreground w-20">Project</span>
                 <Select
                   value={task.projectId}
                   onValueChange={(v) => updateTask({ projectId: v })}
                 >
-                  <SelectTrigger className="h-7 text-xs w-40 bg-transparent border-white/10">
+                  <SelectTrigger className="h-7 text-xs w-40">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -127,12 +124,12 @@ export function TaskPanel() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-xs text-white/40 w-20">SOP</span>
+                <span className="text-xs text-muted-foreground w-20">SOP</span>
                 <Select
                   value={task.sopId ?? "none"}
                   onValueChange={(v) => updateTask({ sopId: v === "none" ? null : v })}
                 >
-                  <SelectTrigger className="h-7 text-xs w-40 bg-transparent border-white/10">
+                  <SelectTrigger className="h-7 text-xs w-40">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -147,54 +144,50 @@ export function TaskPanel() {
               </div>
             </div>
 
-            <Separator className="bg-white/[0.06] mb-4" />
+            <Separator className="mb-4" />
 
             {/* Description */}
             <div className="mb-6">
-              <label className="text-xs text-white/40 block mb-2">Description</label>
+              <label className="text-xs text-muted-foreground block mb-2">Description</label>
               <Textarea
                 value={task.description ?? ""}
                 onChange={(e) => updateTask({ description: e.target.value || null })}
                 placeholder="Add a description..."
-                className="bg-white/[0.03] border-white/[0.06] text-sm min-h-[100px] resize-none"
+                className="text-sm min-h-[100px] resize-none"
                 rows={4}
               />
             </div>
 
-            <Separator className="bg-white/[0.06] mb-4" />
+            <Separator className="mb-4" />
 
             {/* Run History */}
             <div>
-              <h3 className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-3">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
                 Run History
               </h3>
               {task.runs.length === 0 ? (
-                <p className="text-xs text-white/30">No runs yet</p>
+                <p className="text-xs text-muted-foreground">No runs yet</p>
               ) : (
                 <div className="space-y-2">
                   {task.runs.map((run) => (
                     <div
                       key={run.id}
-                      className="bg-white/[0.03] rounded-md p-3 border border-white/[0.06]"
+                      className="bg-muted rounded-md p-3 border border-border"
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-mono text-white/50">{run.model}</span>
+                        <span className="text-xs font-mono text-muted-foreground">{run.model}</span>
                         <Badge
-                          variant="outline"
-                          className={`text-[10px] px-1.5 py-0 h-5 ${
-                            run.status === "RUNNING"
-                              ? "bg-amber-500/10 text-amber-300 border-amber-500/20"
-                              : run.status === "COMPLETED"
-                              ? "bg-green-500/10 text-green-300 border-green-500/20"
-                              : run.status === "FAILED"
-                              ? "bg-red-500/10 text-red-300 border-red-500/20"
-                              : "bg-gray-500/10 text-gray-300 border-gray-500/20"
-                          }`}
+                          variant={
+                            run.status === "COMPLETED" ? "secondary" :
+                            run.status === "FAILED" ? "destructive" :
+                            "outline"
+                          }
+                          className="text-[10px] px-1.5 py-0 h-5"
                         >
                           {run.status}
                         </Badge>
                       </div>
-                      <div className="flex items-center gap-3 text-[11px] text-white/30">
+                      <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                         {run.costUsd !== null && (
                           <span className="text-emerald-400/70">${run.costUsd.toFixed(2)}</span>
                         )}
@@ -205,15 +198,15 @@ export function TaskPanel() {
                       </div>
                       {run.status === "RUNNING" && (
                         <div className="mt-2">
-                          <div className="bg-black/50 rounded p-2 h-20 flex items-center justify-center border border-white/[0.04]">
-                            <span className="text-[11px] text-white/20 animate-pulse">
+                          <div className="bg-background rounded p-2 h-20 flex items-center justify-center border border-border">
+                            <span className="text-[11px] text-muted-foreground animate-pulse">
                               ● Streaming output...
                             </span>
                           </div>
                           <Button
                             variant="outline"
                             size="sm"
-                            className="mt-2 h-6 text-[11px] text-red-400 border-red-500/20 hover:bg-red-500/10"
+                            className="mt-2 h-6 text-[11px] text-destructive"
                           >
                             ■ Stop
                           </Button>

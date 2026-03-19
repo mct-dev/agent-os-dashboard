@@ -36,21 +36,21 @@ export function TaskCard({ task, onDelete }: TaskCardProps) {
   return (
     <div
       onClick={() => setSelectedTaskId(task.id)}
-      className="group bg-[#141414] border border-white/[0.06] rounded-lg p-3 cursor-pointer hover:border-white/[0.12] transition-all hover:bg-[#1a1a1a]"
+      className="group bg-card border border-border rounded-lg p-3 cursor-pointer hover:border-border/80 transition-all hover:bg-accent/50"
     >
       {/* Top row: ID + priority + project + kebab */}
       <div className="flex items-center gap-1.5 mb-1.5">
-        <span className="text-[11px] text-white/30 font-mono">AGT-{task.id}</span>
+        <span className="text-[11px] text-muted-foreground font-mono">AGT-{task.id}</span>
         <span className={`text-[11px] ${priority.color}`}>{priority.icon}</span>
         {project && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/[0.06] text-white/40">
+          <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
             {project.emoji} {project.name}
           </span>
         )}
         <div className="flex-1" />
         <DropdownMenu>
           <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-            <button className="opacity-0 group-hover:opacity-100 text-white/30 hover:text-white/60 text-sm px-1 transition-opacity">
+            <button className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground text-sm px-1 transition-opacity">
               ⋯
             </button>
           </DropdownMenuTrigger>
@@ -59,7 +59,7 @@ export function TaskCard({ task, onDelete }: TaskCardProps) {
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem
-              className="text-red-400 focus:text-red-400"
+              className="text-destructive focus:text-destructive"
               onClick={(e) => { e.stopPropagation(); onDelete(task.id) }}
             >
               Delete
@@ -69,19 +69,19 @@ export function TaskCard({ task, onDelete }: TaskCardProps) {
       </div>
 
       {/* Title */}
-      <p className="text-[13px] text-white/90 leading-snug line-clamp-2 mb-2">
+      <p className="text-[13px] text-foreground/90 leading-snug line-clamp-2 mb-2">
         {task.title}
       </p>
 
       {/* Bottom row: agent + SOP + cost */}
       <div className="flex items-center gap-1.5 flex-wrap">
         {task.sopId && (
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 bg-purple-500/10 text-purple-300 border-purple-500/20">
+          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5">
             {getSopName(task.sopId)}
           </Badge>
         )}
         {agent && (
-          <span className="text-[11px] text-white/40 flex items-center gap-1">
+          <span className="text-[11px] text-muted-foreground flex items-center gap-1">
             🤖 {agent.name}
           </span>
         )}
@@ -103,7 +103,7 @@ export function TaskCard({ task, onDelete }: TaskCardProps) {
         <Button
           variant="ghost"
           size="sm"
-          className="h-5 px-1.5 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity text-white/40 hover:text-white"
+          className="h-5 px-1.5 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
           onClick={(e) => { e.stopPropagation() }}
         >
           ▶ Run

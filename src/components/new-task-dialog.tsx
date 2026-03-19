@@ -59,13 +59,13 @@ export function NewTaskDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-8">
+        <Button size="sm">
           + New Issue
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-[#0f0f0f] border-white/[0.06]">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-white">New Issue</DialogTitle>
+          <DialogTitle>New Issue</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div>
@@ -73,7 +73,6 @@ export function NewTaskDialog() {
               placeholder="Issue title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="bg-white/[0.03] border-white/[0.06]"
               autoFocus
             />
           </div>
@@ -82,13 +81,13 @@ export function NewTaskDialog() {
               placeholder="Add description..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="bg-white/[0.03] border-white/[0.06] resize-none"
+              className="resize-none"
               rows={3}
             />
           </div>
           <div className="grid grid-cols-3 gap-3">
             <Select value={projectId} onValueChange={setProjectId}>
-              <SelectTrigger className="h-8 text-xs bg-transparent border-white/10">
+              <SelectTrigger className="h-8 text-xs">
                 <SelectValue placeholder="Project" />
               </SelectTrigger>
               <SelectContent>
@@ -101,7 +100,7 @@ export function NewTaskDialog() {
             </Select>
 
             <Select value={priority} onValueChange={(v) => setPriority(v as Priority)}>
-              <SelectTrigger className="h-8 text-xs bg-transparent border-white/10">
+              <SelectTrigger className="h-8 text-xs">
                 <SelectValue placeholder="Priority" />
               </SelectTrigger>
               <SelectContent>
@@ -113,7 +112,7 @@ export function NewTaskDialog() {
             </Select>
 
             <Select value={sopId} onValueChange={setSopId}>
-              <SelectTrigger className="h-8 text-xs bg-transparent border-white/10">
+              <SelectTrigger className="h-8 text-xs">
                 <SelectValue placeholder="SOP" />
               </SelectTrigger>
               <SelectContent>
@@ -129,16 +128,16 @@ export function NewTaskDialog() {
 
           {/* SOP Preview */}
           {sopId !== "none" && (
-            <div className="bg-white/[0.03] rounded-md p-3 border border-white/[0.04]">
-              <p className="text-[11px] text-white/40 mb-1.5">Pipeline stages:</p>
+            <div className="bg-muted rounded-md p-3 border border-border">
+              <p className="text-[11px] text-muted-foreground mb-1.5">Pipeline stages:</p>
               <div className="flex items-center gap-1 flex-wrap">
                 {SOPS.find((s) => s.id === sopId)?.stages.map((stage, i) => (
                   <span key={stage.id} className="flex items-center gap-1">
-                    <span className="text-[11px] text-white/60 bg-white/[0.06] px-1.5 py-0.5 rounded">
+                    <span className="text-[11px] text-foreground/60 bg-accent px-1.5 py-0.5 rounded">
                       {stage.name}
                     </span>
                     {i < (SOPS.find((s) => s.id === sopId)?.stages.length ?? 0) - 1 && (
-                      <span className="text-white/20 text-[10px]">→</span>
+                      <span className="text-muted-foreground text-[10px]">→</span>
                     )}
                   </span>
                 ))}
@@ -147,7 +146,7 @@ export function NewTaskDialog() {
           )}
         </div>
         <DialogFooter>
-          <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Button onClick={handleCreate}>
             Create Issue
           </Button>
         </DialogFooter>

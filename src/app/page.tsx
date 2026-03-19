@@ -37,10 +37,10 @@ export default function Dashboard() {
       case "settings":
         return (
           <div className="flex flex-col h-screen">
-            <header className="shrink-0 border-b border-white/[0.06] px-6 py-3">
-              <h1 className="text-sm font-semibold text-white">Settings</h1>
+            <header className="shrink-0 border-b border-border px-6 py-3">
+              <h1 className="text-sm font-semibold text-foreground">Settings</h1>
             </header>
-            <div className="flex-1 flex items-center justify-center text-white/20 text-sm">
+            <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
               Settings coming soon
             </div>
           </div>

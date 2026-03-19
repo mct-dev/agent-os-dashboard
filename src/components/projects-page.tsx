@@ -73,13 +73,9 @@ export function ProjectsPage() {
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="shrink-0 border-b border-white/[0.06] px-6 py-3 flex items-center justify-between">
-        <h1 className="text-sm font-semibold text-white">Projects</h1>
-        <Button
-          size="sm"
-          className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-8"
-          onClick={openNew}
-        >
+      <header className="shrink-0 border-b border-border px-6 py-3 flex items-center justify-between">
+        <h1 className="text-sm font-semibold text-foreground">Projects</h1>
+        <Button size="sm" onClick={openNew}>
           + New Project
         </Button>
       </header>
@@ -91,13 +87,13 @@ export function ProjectsPage() {
             return (
               <div
                 key={project.id}
-                className="bg-[#141414] border border-white/[0.06] rounded-lg p-4 hover:border-white/[0.1] transition-colors cursor-pointer"
+                className="bg-card border border-border rounded-lg p-4 hover:border-border/80 transition-colors cursor-pointer"
                 onClick={() => openEdit(project)}
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">{project.emoji}</span>
-                    <h3 className="text-sm font-medium text-white">{project.name}</h3>
+                    <h3 className="text-sm font-medium text-foreground">{project.name}</h3>
                   </div>
                   <div
                     className="w-3 h-3 rounded-full"
@@ -105,13 +101,13 @@ export function ProjectsPage() {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-white/30">
+                  <span className="text-xs text-muted-foreground">
                     {taskCount} task{taskCount !== 1 ? "s" : ""}
                   </span>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 text-[11px] text-red-400/60 hover:text-red-400"
+                    className="h-6 text-[11px] text-destructive/60 hover:text-destructive"
                     onClick={(e) => { e.stopPropagation(); setDeleteId(project.id) }}
                   >
                     Delete
@@ -125,26 +121,25 @@ export function ProjectsPage() {
 
       {/* Edit/Create Dialog */}
       <Dialog open={!!editing} onOpenChange={(open) => { if (!open) setEditing(null) }}>
-        <DialogContent className="bg-[#0f0f0f] border-white/[0.06] max-w-md">
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-white">
+            <DialogTitle>
               {isNew ? "New Project" : "Edit Project"}
             </DialogTitle>
           </DialogHeader>
           {editing && (
             <div className="space-y-4 py-2">
               <div>
-                <label className="text-xs text-white/40 block mb-1">Name</label>
+                <label className="text-xs text-muted-foreground block mb-1">Name</label>
                 <Input
                   value={editing.name}
                   onChange={(e) => setEditing({ ...editing, name: e.target.value })}
-                  className="bg-white/[0.03] border-white/[0.06]"
                   autoFocus
                 />
               </div>
 
               <div>
-                <label className="text-xs text-white/40 block mb-2">Icon</label>
+                <label className="text-xs text-muted-foreground block mb-2">Icon</label>
                 <div className="flex flex-wrap gap-1.5">
                   {EMOJIS.map((emoji) => (
                     <button
@@ -152,8 +147,8 @@ export function ProjectsPage() {
                       onClick={() => setEditing({ ...editing, emoji })}
                       className={`w-8 h-8 rounded-md flex items-center justify-center text-lg transition-all ${
                         editing.emoji === emoji
-                          ? "bg-white/[0.1] ring-1 ring-white/20"
-                          : "hover:bg-white/[0.05]"
+                          ? "bg-accent ring-1 ring-ring"
+                          : "hover:bg-accent/50"
                       }`}
                     >
                       {emoji}
@@ -163,14 +158,14 @@ export function ProjectsPage() {
               </div>
 
               <div>
-                <label className="text-xs text-white/40 block mb-2">Color</label>
+                <label className="text-xs text-muted-foreground block mb-2">Color</label>
                 <div className="flex flex-wrap gap-1.5">
                   {COLORS.map((color) => (
                     <button
                       key={color}
                       onClick={() => setEditing({ ...editing, color })}
                       className={`w-7 h-7 rounded-full transition-all ${
-                        editing.color === color ? "ring-2 ring-white/40 ring-offset-2 ring-offset-[#0f0f0f]" : ""
+                        editing.color === color ? "ring-2 ring-ring ring-offset-2 ring-offset-background" : ""
                       }`}
                       style={{ backgroundColor: color }}
                     />
@@ -180,7 +175,7 @@ export function ProjectsPage() {
             </div>
           )}
           <DialogFooter>
-            <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button onClick={handleSave}>
               {isNew ? "Create Project" : "Save Changes"}
             </Button>
           </DialogFooter>
@@ -189,18 +184,21 @@ export function ProjectsPage() {
 
       {/* Delete Confirmation */}
       <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null) }}>
-        <AlertDialogContent className="bg-[#0f0f0f] border-white/[0.06]">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Delete {deleteProject?.name}?</AlertDialogTitle>
-            <AlertDialogDescription className="text-white/50">
+            <AlertDialogTitle>Delete {deleteProject?.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
               {deleteTaskCount > 0
                 ? `${deleteTaskCount} task${deleteTaskCount !== 1 ? "s" : ""} will be unassigned. This cannot be undone.`
                 : "This project will be permanently removed."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-transparent border-white/10 text-white/70 hover:bg-white/5">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white">
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

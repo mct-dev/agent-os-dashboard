@@ -34,7 +34,6 @@ export function InboxPage() {
 
   const handleReply = (id: string) => {
     if (!replyText.trim()) return
-    // In a real app, this would POST to the API
     dismiss(id)
     setReplyingTo(null)
     setReplyText("")
@@ -42,10 +41,10 @@ export function InboxPage() {
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="shrink-0 border-b border-white/[0.06] px-6 py-3 flex items-center justify-between">
+      <header className="shrink-0 border-b border-border px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-sm font-semibold text-white">Inbox</h1>
-          <span className="text-[11px] text-white/30">
+          <h1 className="text-sm font-semibold text-foreground">Inbox</h1>
+          <span className="text-[11px] text-muted-foreground">
             {inbox.filter((i) => !i.read).length} unread
           </span>
         </div>
@@ -53,7 +52,7 @@ export function InboxPage() {
 
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {sortedItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-white/30">
+          <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
             <span className="text-3xl mb-3">🎉</span>
             <p className="text-sm">All clear — no pending items</p>
           </div>
@@ -63,37 +62,37 @@ export function InboxPage() {
             return (
               <div
                 key={item.id}
-                className={`bg-[#141414] border rounded-lg p-4 transition-all ${
-                  item.read ? "border-white/[0.04] opacity-60" : "border-white/[0.08]"
+                className={`bg-card border rounded-lg p-4 transition-all ${
+                  item.read ? "border-border/50 opacity-60" : "border-border"
                 }`}
                 onClick={() => markRead(item.id)}
               >
                 <div className="flex items-start gap-3">
                   {/* Unread dot */}
                   <div className="pt-1.5 shrink-0">
-                    {!item.read && <span className="block w-2 h-2 rounded-full bg-blue-400" />}
+                    {!item.read && <span className="block w-2 h-2 rounded-full bg-primary" />}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     {/* Header */}
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-medium text-white/80">🤖 {item.agentName}</span>
-                      <span className="text-[11px] text-white/30">on</span>
-                      <span className="text-xs text-white/50 truncate">{item.taskTitle}</span>
+                      <span className="text-xs font-medium text-foreground/80">🤖 {item.agentName}</span>
+                      <span className="text-[11px] text-muted-foreground">on</span>
+                      <span className="text-xs text-muted-foreground truncate">{item.taskTitle}</span>
                       <Badge
-                        variant="outline"
-                        className={`text-[10px] px-1.5 py-0 h-5 ml-auto shrink-0 ${
-                          item.priority === "URGENT" ? "bg-red-500/10 text-red-300 border-red-500/20" :
-                          item.priority === "HIGH" ? "bg-orange-500/10 text-orange-300 border-orange-500/20" :
-                          "bg-white/5 text-white/40 border-white/10"
-                        }`}
+                        variant={
+                          item.priority === "URGENT" ? "destructive" :
+                          item.priority === "HIGH" ? "destructive" :
+                          "outline"
+                        }
+                        className="text-[10px] px-1.5 py-0 h-5 ml-auto shrink-0"
                       >
                         {priority.icon} {priority.label}
                       </Badge>
                     </div>
 
                     {/* Question */}
-                    <p className="text-[13px] text-white/70 leading-relaxed mb-3">
+                    <p className="text-[13px] text-foreground/70 leading-relaxed mb-3">
                       {item.question}
                     </p>
 
@@ -104,13 +103,13 @@ export function InboxPage() {
                           value={replyText}
                           onChange={(e) => setReplyText(e.target.value)}
                           placeholder="Type your reply..."
-                          className="flex-1 h-8 text-xs bg-white/[0.03] border-white/[0.06]"
+                          className="flex-1 h-8 text-xs"
                           autoFocus
                           onKeyDown={(e) => { if (e.key === "Enter") handleReply(item.id) }}
                         />
                         <Button
                           size="sm"
-                          className="h-8 text-xs bg-blue-600 hover:bg-blue-700"
+                          className="h-8 text-xs"
                           onClick={() => handleReply(item.id)}
                         >
                           Send
@@ -118,7 +117,7 @@ export function InboxPage() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-8 text-xs text-white/40"
+                          className="h-8 text-xs"
                           onClick={() => { setReplyingTo(null); setReplyText("") }}
                         >
                           Cancel
@@ -129,7 +128,7 @@ export function InboxPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-6 text-[11px] border-white/10 text-white/50 hover:text-white"
+                          className="h-6 text-[11px]"
                           onClick={(e) => { e.stopPropagation(); setReplyingTo(item.id) }}
                         >
                           Reply
@@ -137,7 +136,7 @@ export function InboxPage() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-6 text-[11px] text-white/30"
+                          className="h-6 text-[11px] text-muted-foreground"
                           onClick={(e) => { e.stopPropagation(); snooze(item.id) }}
                         >
                           Snooze 1h
@@ -145,12 +144,12 @@ export function InboxPage() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-6 text-[11px] text-white/30"
+                          className="h-6 text-[11px] text-muted-foreground"
                           onClick={(e) => { e.stopPropagation(); dismiss(item.id) }}
                         >
                           Dismiss
                         </Button>
-                        <span className="ml-auto text-[10px] text-white/20">
+                        <span className="ml-auto text-[10px] text-muted-foreground/50">
                           {new Date(item.timestamp).toLocaleString()}
                         </span>
                       </div>
