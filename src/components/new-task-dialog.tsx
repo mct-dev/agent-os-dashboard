@@ -67,27 +67,30 @@ export function NewTaskDialog() {
         <DialogHeader>
           <DialogTitle>New Issue</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 py-2">
+        <div className="space-y-4 py-4">
           <div>
+            <label className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1.5 block">Title</label>
             <Input
               placeholder="Issue title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               autoFocus
+              className="h-10"
             />
           </div>
           <div>
+            <label className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1.5 block">Description</label>
             <Textarea
               placeholder="Add description..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="resize-none"
+              className="resize-none min-h-[80px]"
               rows={3}
             />
           </div>
           <div className="grid grid-cols-3 gap-3">
             <Select value={projectId} onValueChange={setProjectId}>
-              <SelectTrigger className="h-8 text-xs">
+              <SelectTrigger className="h-9 text-xs">
                 <SelectValue placeholder="Project" />
               </SelectTrigger>
               <SelectContent>
@@ -100,7 +103,7 @@ export function NewTaskDialog() {
             </Select>
 
             <Select value={priority} onValueChange={(v) => setPriority(v as Priority)}>
-              <SelectTrigger className="h-8 text-xs">
+              <SelectTrigger className="h-9 text-xs">
                 <SelectValue placeholder="Priority" />
               </SelectTrigger>
               <SelectContent>
@@ -112,7 +115,7 @@ export function NewTaskDialog() {
             </Select>
 
             <Select value={sopId} onValueChange={setSopId}>
-              <SelectTrigger className="h-8 text-xs">
+              <SelectTrigger className="h-9 text-xs">
                 <SelectValue placeholder="SOP" />
               </SelectTrigger>
               <SelectContent>
