@@ -9,12 +9,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ profile }) {
-      return (
-        profile?.email === "mike@laurel.ai" ||
-        profile?.email === "axis139@gmail.com"
-      )
+    async signIn({ user, profile }) {
+      const email = user?.email ?? profile?.email
+      return email === "mike@laurel.ai" || email === "axis139@gmail.com"
+    },
+    async jwt({ token, user }) {
+      if (user?.email) {
+        token.email = user.email
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (token?.email) {
+        session.user.email = token.email as string
+      }
+      return session
     },
   },
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
+  trustHost: true,
 })

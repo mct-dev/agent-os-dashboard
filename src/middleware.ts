@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
-import { getToken } from "next-auth/jwt"
+import { auth } from "@/lib/auth"
 
-export async function middleware(request: NextRequest) {
+export default auth((request) => {
   const { pathname } = request.nextUrl
 
   // Always allow: API routes, auth routes, static assets
@@ -14,11 +13,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Check for a valid session token
-  const token = await getToken({ req: request })
-
-  // Not signed in — redirect to sign-in page
-  if (!token?.email) {
+  // Check for a valid session (provided by auth() wrapper)
+  if (!request.auth?.user?.email) {
     const signInUrl = new URL("/api/auth/signin", request.url)
     signInUrl.searchParams.set("callbackUrl", request.url)
     return NextResponse.redirect(signInUrl)
@@ -35,7 +31,7 @@ export async function middleware(request: NextRequest) {
   }
 
   return NextResponse.next()
-}
+})
 
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
