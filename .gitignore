@@ -39,6 +39,9 @@ yarn-error.log*
 bridge/node_modules
 bridge/.env
 
+# worktrees
+.worktrees/
+
 # vercel
 .vercel
 

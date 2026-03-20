@@ -91,16 +91,16 @@ function DroppableColumn({
     <div
       ref={setNodeRef}
       className={`w-[280px] flex flex-col shrink-0 rounded-lg transition-colors ${
-        isOver ? "bg-accent/50 ring-2 ring-primary/30" : ""
+        isOver ? "bg-base-300/50 ring-2 ring-primary/30" : ""
       }`}
     >
       {/* Column Header */}
       <div className="flex items-center gap-2 px-1 pb-3">
         <span className={`w-2.5 h-2.5 rounded-full ${config.dotColor}`} />
-        <span className="text-xs font-medium text-muted-foreground">
+        <span className="text-xs font-medium text-base-content/60">
           {config.label}
         </span>
-        <span className="text-[11px] text-muted-foreground/50 bg-muted px-1.5 py-0.5 rounded-full">
+        <span className="text-[11px] text-base-content/30 bg-base-200 px-1.5 py-0.5 rounded-full">
           {tasks.length}
         </span>
       </div>
@@ -207,9 +207,9 @@ export function KanbanBoard() {
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
-      <header className="shrink-0 border-b border-border px-6 py-3 flex items-center justify-between">
+      <header className="shrink-0 border-b border-base-300 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <h1 className="text-sm font-semibold text-foreground">Board</h1>
+          <h1 className="text-sm font-semibold text-base-content">Board</h1>
           <Select value={projectFilter} onValueChange={setProjectFilter}>
             <SelectTrigger className="h-7 text-xs w-36 bg-transparent border-input">
               <SelectValue placeholder="All Projects" />
@@ -285,7 +285,7 @@ export function KanbanBoard() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-error text-error-content hover:bg-error/90"
             >
               Delete
             </AlertDialogAction>

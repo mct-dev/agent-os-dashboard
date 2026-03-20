@@ -69,7 +69,7 @@ export function NewTaskDialog() {
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div>
-            <label className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1.5 block">Title</label>
+            <label className="text-xs text-base-content/60 uppercase tracking-wide font-medium mb-1.5 block">Title</label>
             <Input
               placeholder="Issue title"
               value={title}
@@ -79,7 +79,7 @@ export function NewTaskDialog() {
             />
           </div>
           <div>
-            <label className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1.5 block">Description</label>
+            <label className="text-xs text-base-content/60 uppercase tracking-wide font-medium mb-1.5 block">Description</label>
             <Textarea
               placeholder="Add description..."
               value={description}
@@ -131,16 +131,16 @@ export function NewTaskDialog() {
 
           {/* SOP Preview */}
           {sopId !== "none" && (
-            <div className="bg-muted rounded-md p-3 border border-border">
-              <p className="text-[11px] text-muted-foreground mb-1.5">Pipeline stages:</p>
+            <div className="bg-base-200 rounded-md p-3 border border-base-300">
+              <p className="text-[11px] text-base-content/60 mb-1.5">Pipeline stages:</p>
               <div className="flex items-center gap-1 flex-wrap">
                 {SOPS.find((s) => s.id === sopId)?.stages.map((stage, i) => (
                   <span key={stage.id} className="flex items-center gap-1">
-                    <span className="text-[11px] text-foreground/60 bg-accent px-1.5 py-0.5 rounded">
+                    <span className="text-[11px] text-base-content/60 bg-base-300 px-1.5 py-0.5 rounded">
                       {stage.name}
                     </span>
                     {i < (SOPS.find((s) => s.id === sopId)?.stages.length ?? 0) - 1 && (
-                      <span className="text-muted-foreground text-[10px]">→</span>
+                      <span className="text-base-content/60 text-[10px]">→</span>
                     )}
                   </span>
                 ))}

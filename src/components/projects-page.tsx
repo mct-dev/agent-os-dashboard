@@ -73,8 +73,8 @@ export function ProjectsPage() {
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="shrink-0 border-b border-border px-6 py-3 flex items-center justify-between">
-        <h1 className="text-sm font-semibold text-foreground">Projects</h1>
+      <header className="shrink-0 border-b border-base-300 px-6 py-3 flex items-center justify-between">
+        <h1 className="text-sm font-semibold text-base-content">Projects</h1>
         <Button size="sm" onClick={openNew}>
           + New Project
         </Button>
@@ -87,13 +87,13 @@ export function ProjectsPage() {
             return (
               <div
                 key={project.id}
-                className="bg-card border border-border rounded-lg p-4 hover:border-border/80 transition-colors cursor-pointer"
+                className="bg-base-200 border border-base-300 rounded-lg p-4 hover:border-base-300/80 transition-colors cursor-pointer"
                 onClick={() => openEdit(project)}
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-xl">{project.emoji}</span>
-                    <h3 className="text-sm font-medium text-foreground">{project.name}</h3>
+                    <h3 className="text-sm font-medium text-base-content">{project.name}</h3>
                   </div>
                   <div
                     className="w-3 h-3 rounded-full"
@@ -101,13 +101,13 @@ export function ProjectsPage() {
                   />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-base-content/60">
                     {taskCount} task{taskCount !== 1 ? "s" : ""}
                   </span>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 text-[11px] text-destructive/60 hover:text-destructive"
+                    className="h-6 text-[11px] text-error/60 hover:text-error"
                     onClick={(e) => { e.stopPropagation(); setDeleteId(project.id) }}
                   >
                     Delete
@@ -130,7 +130,7 @@ export function ProjectsPage() {
           {editing && (
             <div className="space-y-4 py-2">
               <div>
-                <label className="text-xs text-muted-foreground block mb-1">Name</label>
+                <label className="text-xs text-base-content/60 block mb-1">Name</label>
                 <Input
                   value={editing.name}
                   onChange={(e) => setEditing({ ...editing, name: e.target.value })}
@@ -139,7 +139,7 @@ export function ProjectsPage() {
               </div>
 
               <div>
-                <label className="text-xs text-muted-foreground block mb-2">Icon</label>
+                <label className="text-xs text-base-content/60 block mb-2">Icon</label>
                 <div className="flex flex-wrap gap-1.5">
                   {EMOJIS.map((emoji) => (
                     <button
@@ -147,8 +147,8 @@ export function ProjectsPage() {
                       onClick={() => setEditing({ ...editing, emoji })}
                       className={`w-8 h-8 rounded-md flex items-center justify-center text-lg transition-all ${
                         editing.emoji === emoji
-                          ? "bg-accent ring-1 ring-ring"
-                          : "hover:bg-accent/50"
+                          ? "bg-base-300 ring-1 ring-primary"
+                          : "hover:bg-base-300/50"
                       }`}
                     >
                       {emoji}
@@ -158,14 +158,14 @@ export function ProjectsPage() {
               </div>
 
               <div>
-                <label className="text-xs text-muted-foreground block mb-2">Color</label>
+                <label className="text-xs text-base-content/60 block mb-2">Color</label>
                 <div className="flex flex-wrap gap-1.5">
                   {COLORS.map((color) => (
                     <button
                       key={color}
                       onClick={() => setEditing({ ...editing, color })}
                       className={`w-7 h-7 rounded-full transition-all ${
-                        editing.color === color ? "ring-2 ring-ring ring-offset-2 ring-offset-background" : ""
+                        editing.color === color ? "ring-2 ring-primary ring-offset-2 ring-offset-base-100" : ""
                       }`}
                       style={{ backgroundColor: color }}
                     />
@@ -197,7 +197,7 @@ export function ProjectsPage() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-error text-error-content hover:bg-error/90"
             >
               Delete
             </AlertDialogAction>

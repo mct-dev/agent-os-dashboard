@@ -187,8 +187,8 @@ export function AgentsPage() {
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="shrink-0 border-b border-border px-6 py-3 flex items-center justify-between">
-        <h1 className="text-sm font-semibold text-foreground">Agents</h1>
+      <header className="shrink-0 border-b border-base-300 px-6 py-3 flex items-center justify-between">
+        <h1 className="text-sm font-semibold text-base-content">Agents</h1>
         <Button size="sm" onClick={openNew}>
           + New Agent
         </Button>
@@ -197,7 +197,7 @@ export function AgentsPage() {
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Configured Agents */}
         <section>
-          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+          <h2 className="text-xs font-semibold text-base-content/60 uppercase tracking-wider mb-3">
             Configured Agents
           </h2>
           <div className="space-y-2">
@@ -206,13 +206,13 @@ export function AgentsPage() {
               return (
                 <div
                   key={agent.id}
-                  className="bg-card border border-border rounded-lg p-4 hover:border-border/80 transition-colors cursor-pointer"
+                  className="bg-base-200 border border-base-300 rounded-lg p-4 hover:border-base-300/80 transition-colors cursor-pointer"
                   onClick={() => openEdit(agent)}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                       <span className="text-sm">🤖</span>
-                      <h3 className="text-sm font-medium text-foreground">{agent.name}</h3>
+                      <h3 className="text-sm font-medium text-base-content">{agent.name}</h3>
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 font-mono">
                         {agent.model}
                       </Badge>
@@ -220,16 +220,16 @@ export function AgentsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-6 text-[11px] text-destructive/60 hover:text-destructive"
+                      className="h-6 text-[11px] text-error/60 hover:text-error"
                       onClick={(e) => { e.stopPropagation(); setDeleteId(agent.id) }}
                     >
                       Delete
                     </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground mb-2">{agent.description}</p>
+                  <p className="text-xs text-base-content/60 mb-2">{agent.description}</p>
                   {sop && (
                     <div className="flex items-center gap-1">
-                      <span className="text-[10px] text-muted-foreground/60">SOP:</span>
+                      <span className="text-[10px] text-base-content/40">SOP:</span>
                       <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5">
                         {sop.name}
                       </Badge>
@@ -239,21 +239,21 @@ export function AgentsPage() {
               )
             })}
             {agents.length === 0 && (
-              <p className="text-xs text-muted-foreground text-center py-8">No agents configured yet</p>
+              <p className="text-xs text-base-content/60 text-center py-8">No agents configured yet</p>
             )}
           </div>
         </section>
 
         {/* Bridge Status */}
         <section>
-          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+          <h2 className="text-xs font-semibold text-base-content/60 uppercase tracking-wider mb-3">
             Bridge
           </h2>
-          <div className="bg-card border border-border rounded-lg p-4 mb-4">
+          <div className="bg-base-200 border border-base-300 rounded-lg p-4 mb-4">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <span className="text-lg">🌉</span>
-                <h3 className="text-sm font-medium text-foreground">
+                <h3 className="text-sm font-medium text-base-content">
                   {bridge.name || "Local Bridge"}
                 </h3>
               </div>
@@ -268,25 +268,25 @@ export function AgentsPage() {
               </Badge>
             </div>
             {bridge.url && (
-              <div className="space-y-1.5 text-xs text-muted-foreground mb-3">
+              <div className="space-y-1.5 text-xs text-base-content/60 mb-3">
                 <div className="flex justify-between">
                   <span>URL</span>
-                  <span className="text-foreground/60 font-mono">{bridge.url}</span>
+                  <span className="text-base-content/60 font-mono">{bridge.url}</span>
                 </div>
                 {bridge.version && (
                   <div className="flex justify-between">
                     <span>Version</span>
-                    <span className="text-foreground/60 font-mono">{bridge.version}</span>
+                    <span className="text-base-content/60 font-mono">{bridge.version}</span>
                   </div>
                 )}
               </div>
             )}
             {bridge.status === "not-configured" && (
-              <div className="bg-muted border border-border rounded-md p-2.5">
+              <div className="bg-base-200 border border-base-300 rounded-md p-2.5">
                 <p className="text-[11px] text-amber-300/70">
                   ⚠ Bridge not configured
                 </p>
-                <p className="text-[10px] text-muted-foreground mt-1">
+                <p className="text-[10px] text-base-content/60 mt-1">
                   Go to Settings to configure your local bridge connection.
                 </p>
               </div>
@@ -301,18 +301,18 @@ export function AgentsPage() {
 
         {/* Available Runtimes */}
         <section>
-          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+          <h2 className="text-xs font-semibold text-base-content/60 uppercase tracking-wider mb-3">
             Available Runtimes
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {RUNTIMES.map((runtime) => (
               <div
                 key={runtime.name}
-                className="bg-card border border-border rounded-lg p-4"
+                className="bg-base-200 border border-base-300 rounded-lg p-4"
               >
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-lg">{runtime.icon}</span>
-                  <h3 className="text-sm font-medium text-foreground">{runtime.name}</h3>
+                  <h3 className="text-sm font-medium text-base-content">{runtime.name}</h3>
                   <Badge
                     variant={bridge.status === "connected" ? "default" : "destructive"}
                     className={`text-[10px] px-1.5 py-0 h-5 ml-auto ${bridge.status === "connected" ? "bg-green-600/20 text-green-400 border-green-600/30" : ""}`}
@@ -320,26 +320,26 @@ export function AgentsPage() {
                     {bridge.status === "connected" ? "Online" : "Offline"}
                   </Badge>
                 </div>
-                <div className="space-y-1.5 text-xs text-muted-foreground mb-3">
+                <div className="space-y-1.5 text-xs text-base-content/60 mb-3">
                   <div className="flex justify-between">
                     <span>Version</span>
-                    <span className="text-foreground/60 font-mono">{runtime.version}</span>
+                    <span className="text-base-content/60 font-mono">{runtime.version}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Path</span>
-                    <span className="text-foreground/60 font-mono">{runtime.path}</span>
+                    <span className="text-base-content/60 font-mono">{runtime.path}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Skills</span>
-                    <span className="text-foreground/60">—</span>
+                    <span className="text-base-content/60">—</span>
                   </div>
                 </div>
                 {bridge.status !== "connected" && (
-                  <div className="bg-muted border border-border rounded-md p-2.5">
+                  <div className="bg-base-200 border border-base-300 rounded-md p-2.5">
                     <p className="text-[11px] text-amber-300/70">
                       ⚠ Runtime bridge: {bridge.status === "not-configured" ? "Not configured" : "Disconnected"}
                     </p>
-                    <p className="text-[10px] text-muted-foreground mt-1">
+                    <p className="text-[10px] text-base-content/60 mt-1">
                       A local bridge is required to connect Vercel to your machine&apos;s runtime. Connect via local bridge to sync skills.
                     </p>
                   </div>
@@ -361,7 +361,7 @@ export function AgentsPage() {
           {editing && (
             <div className="space-y-4 py-2">
               <div>
-                <label className="text-xs text-muted-foreground block mb-1">Name</label>
+                <label className="text-xs text-base-content/60 block mb-1">Name</label>
                 <Input
                   value={editing.name}
                   onChange={(e) => setEditing({ ...editing, name: e.target.value })}
@@ -369,14 +369,14 @@ export function AgentsPage() {
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground block mb-1">Description</label>
+                <label className="text-xs text-base-content/60 block mb-1">Description</label>
                 <Input
                   value={editing.description}
                   onChange={(e) => setEditing({ ...editing, description: e.target.value })}
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground block mb-1">Model</label>
+                <label className="text-xs text-base-content/60 block mb-1">Model</label>
                 <Select
                   value={editing.model}
                   onValueChange={(v) => setEditing({ ...editing, model: v })}
@@ -411,7 +411,7 @@ export function AgentsPage() {
                 </Select>
               </div>
               <div>
-                <label className="text-xs text-muted-foreground block mb-1">Default SOP</label>
+                <label className="text-xs text-base-content/60 block mb-1">Default SOP</label>
                 <Select
                   value={editing.defaultSopId ?? "none"}
                   onValueChange={(v) => setEditing({ ...editing, defaultSopId: v === "none" ? null : v })}
@@ -428,7 +428,7 @@ export function AgentsPage() {
                 </Select>
               </div>
               <div>
-                <label className="text-xs text-muted-foreground block mb-1">System Prompt</label>
+                <label className="text-xs text-base-content/60 block mb-1">System Prompt</label>
                 <Textarea
                   value={editing.systemPrompt}
                   onChange={(e) => setEditing({ ...editing, systemPrompt: e.target.value })}
@@ -459,7 +459,7 @@ export function AgentsPage() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-error text-error-content hover:bg-error/90"
             >
               Delete
             </AlertDialogAction>
