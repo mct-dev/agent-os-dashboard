@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { getSession } from "@/lib/auth"
-import { serializeTask } from "@/lib/api-helpers"
 
 async function requireSession() {
   const session = await getSession()
@@ -22,16 +21,16 @@ export async function GET(
 
   const { id } = await params
 
-  const task = await prisma.task.findUnique({
+  const sop = await prisma.sop.findUnique({
     where: { id },
-    include: { runs: { orderBy: { startedAt: "desc" } } },
+    include: { stages: { orderBy: { sortOrder: "asc" } } },
   })
 
-  if (!task) {
-    return NextResponse.json({ error: "Task not found" }, { status: 404 })
+  if (!sop) {
+    return NextResponse.json({ error: "SOP not found" }, { status: 404 })
   }
 
-  return NextResponse.json(serializeTask(task))
+  return NextResponse.json(sop)
 }
 
 export async function PUT(
@@ -46,22 +45,39 @@ export async function PUT(
   const { id } = await params
   const body = await req.json()
 
-  // Build update data from allowed fields
-  const data: Record<string, unknown> = {}
-  if (body.title !== undefined) data.title = String(body.title)
-  if (body.description !== undefined) data.description = body.description
-  if (body.status !== undefined) data.status = String(body.status).toUpperCase()
-  if (body.priority !== undefined) data.priority = String(body.priority).toUpperCase()
-  if (body.projectId !== undefined) data.projectId = body.projectId
-  if (body.sopId !== undefined) data.sopId = body.sopId
-
-  const task = await prisma.task.update({
-    where: { id },
-    data,
-    include: { runs: { orderBy: { startedAt: "desc" } } },
+  const sop = await prisma.$transaction(async (tx) => {
+    if (body.stages) {
+      await tx.sopStage.deleteMany({ where: { sopId: id } })
+    }
+    const updated = await tx.sop.update({
+      where: { id },
+      data: {
+        ...(body.name !== undefined && { name: body.name }),
+        ...(body.description !== undefined && {
+          description: body.description,
+        }),
+        ...(body.stages && {
+          stages: {
+            create: body.stages.map(
+              (
+                s: { name: string; role: string; prompt: string },
+                i: number
+              ) => ({
+                name: s.name,
+                role: s.role,
+                prompt: s.prompt,
+                sortOrder: i,
+              })
+            ),
+          },
+        }),
+      },
+      include: { stages: { orderBy: { sortOrder: "asc" } } },
+    })
+    return updated
   })
 
-  return NextResponse.json(serializeTask(task))
+  return NextResponse.json(sop)
 }
 
 export async function DELETE(
@@ -75,8 +91,7 @@ export async function DELETE(
 
   const { id } = await params
 
-  // Cascade delete is configured in Prisma schema (onDelete: Cascade on AgentRun.task)
-  await prisma.task.delete({ where: { id } })
+  await prisma.sop.delete({ where: { id } })
 
   return NextResponse.json({ ok: true })
 }

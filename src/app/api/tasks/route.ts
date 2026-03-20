@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
-import type { Project } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { getSession } from "@/lib/auth"
-import { serializeTask, parseProjectId } from "@/lib/api-helpers"
+import { serializeTask } from "@/lib/api-helpers"
 
 async function authenticate(req: NextRequest): Promise<boolean> {
   // Check API key first (external clients like Telegram)
@@ -26,7 +25,7 @@ export async function GET(req: NextRequest) {
   const project = req.nextUrl.searchParams.get("project")
 
   const tasks = await prisma.task.findMany({
-    where: project ? { project: project.toUpperCase() as Project } : undefined,
+    where: project ? { projectId: project } : undefined,
     orderBy: { updatedAt: "desc" },
     include: { runs: { orderBy: { startedAt: "desc" } } },
   })
@@ -45,16 +44,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "title is required" }, { status: 400 })
   }
 
-  // Accept either projectId (frontend) or project (legacy API)
-  const project = body.projectId
-    ? parseProjectId(body.projectId)
-    : body.project ?? "PERSONAL"
-
   const task = await prisma.task.create({
     data: {
       title: body.title,
       description: body.description,
-      project: project as Project,
+      projectId: body.projectId ?? null,
       priority: body.priority ?? "MEDIUM",
       sopId: body.sopId,
     },

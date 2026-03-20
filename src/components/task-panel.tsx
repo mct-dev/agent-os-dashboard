@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/select"
 import { useAppState } from "@/lib/store"
 import { STATUS_CONFIG, PRIORITY_CONFIG, STATUSES, LLM_MODELS, type AgentRun } from "@/lib/types"
-import { SOPS } from "@/lib/sops"
 import { updateTask as apiUpdateTask, startRun, stopRun } from "@/lib/api-client"
 import { toast } from "sonner"
 
@@ -85,7 +84,7 @@ function RunStreamOutput({ runId, onStatusChange }: { runId: string; onStatusCha
 }
 
 export function TaskPanel() {
-  const { selectedTaskId, setSelectedTaskId, tasks, setTasks, projects } = useAppState()
+  const { selectedTaskId, setSelectedTaskId, tasks, setTasks, projects, sops } = useAppState()
   const task = tasks.find((t) => t.id === selectedTaskId)
 
   const [runModel, setRunModel] = useState<string>(LLM_MODELS[0])
@@ -328,7 +327,7 @@ export function TaskPanel() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">None</SelectItem>
-                    {SOPS.map((s) => (
+                    {sops.map((s) => (
                       <SelectItem key={s.id} value={s.id}>
                         {s.name}
                       </SelectItem>

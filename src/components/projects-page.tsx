@@ -21,6 +21,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useAppState } from "@/lib/store"
+import {
+  createProject as apiCreateProject,
+  updateProject as apiUpdateProject,
+  deleteProject as apiDeleteProject,
+} from "@/lib/api-client"
+import { toast } from "sonner"
 import type { Project } from "@/lib/types"
 
 const COLORS = [
@@ -31,7 +37,7 @@ const COLORS = [
 const EMOJIS = ["🔵", "🟢", "🟡", "🔴", "🟣", "🟠", "⚪", "⭐", "🔥", "💎", "🎯", "📦"]
 
 export function ProjectsPage() {
-  const { projects, setProjects, tasks } = useAppState()
+  const { projects, tasks, refreshProjects } = useAppState()
   const [editing, setEditing] = useState<Project | null>(null)
   const [isNew, setIsNew] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -51,20 +57,29 @@ export function ProjectsPage() {
     setIsNew(false)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editing || !editing.name.trim()) return
-    if (isNew) {
-      setProjects((prev) => [...prev, editing])
-    } else {
-      setProjects((prev) => prev.map((p) => (p.id === editing.id ? editing : p)))
+    try {
+      if (isNew) {
+        await apiCreateProject({ name: editing.name, color: editing.color, emoji: editing.emoji })
+      } else {
+        await apiUpdateProject(editing.id, { name: editing.name, color: editing.color, emoji: editing.emoji })
+      }
+      await refreshProjects()
+      setEditing(null)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save project")
     }
-    setEditing(null)
   }
 
-  const handleDelete = () => {
-    if (deleteId) {
-      setProjects((prev) => prev.filter((p) => p.id !== deleteId))
+  const handleDelete = async () => {
+    if (!deleteId) return
+    try {
+      await apiDeleteProject(deleteId)
+      await refreshProjects()
       setDeleteId(null)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete project")
     }
   }
 

@@ -38,14 +38,18 @@ export interface Task {
 
 export interface InboxItem {
   id: string
+  agentRunId: string | null
   agentName: string
   taskTitle: string
-  taskId: string
+  taskId: string | null
   question: string
   priority: Priority
-  timestamp: string
   read: boolean
   snoozedUntil: string | null
+  repliedAt: string | null
+  replyText: string | null
+  createdAt: string
+  updatedAt: string
 }
 
 export interface AgentConfig {

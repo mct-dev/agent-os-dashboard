@@ -18,6 +18,10 @@ export interface AppState {
   selectedTaskId: string | null
   setSelectedTaskId: (id: string | null) => void
   refreshTasks: () => Promise<void>
+  refreshProjects: () => Promise<void>
+  refreshAgents: () => Promise<void>
+  refreshSops: () => Promise<void>
+  refreshInbox: () => Promise<void>
 }
 
 export const AppContext = createContext<AppState | null>(null)

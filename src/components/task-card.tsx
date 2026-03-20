@@ -11,15 +11,8 @@ import {
 import type { Task, AgentRun } from "@/lib/types"
 import { PRIORITY_CONFIG, LLM_MODELS } from "@/lib/types"
 import { useAppState } from "@/lib/store"
-import { SOPS } from "@/lib/sops"
 import { startRun } from "@/lib/api-client"
 import { toast } from "sonner"
-
-function getSopName(sopId: string | null): string | null {
-  if (!sopId) return null
-  const sop = SOPS.find((s) => s.id === sopId)
-  return sop?.name ?? sopId
-}
 
 interface TaskCardProps {
   task: Task
@@ -27,7 +20,13 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, onDelete }: TaskCardProps) {
-  const { setSelectedTaskId, setTasks, agents, projects } = useAppState()
+  const { setSelectedTaskId, setTasks, agents, projects, sops } = useAppState()
+
+  const getSopName = (sopId: string | null): string | null => {
+    if (!sopId) return null
+    const sop = sops.find((s) => s.id === sopId)
+    return sop?.name ?? sopId
+  }
   const lastRun = task.runs[task.runs.length - 1] ?? null
   const priority = PRIORITY_CONFIG[task.priority]
   const project = projects.find((p) => p.id === task.projectId)

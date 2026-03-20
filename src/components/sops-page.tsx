@@ -23,6 +23,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useAppState } from "@/lib/store"
+import {
+  createSop as apiCreateSop,
+  updateSop as apiUpdateSop,
+  deleteSop as apiDeleteSop,
+} from "@/lib/api-client"
+import { toast } from "sonner"
 import type { SOP, BMADStage } from "@/lib/sops"
 
 function StageBuilder({
@@ -106,7 +112,7 @@ function StageBuilder({
 }
 
 export function SOPsPage() {
-  const { sops, setSops } = useAppState()
+  const { sops, refreshSops } = useAppState()
   const [editingSop, setEditingSop] = useState<SOP | null>(null)
   const [isNew, setIsNew] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -126,20 +132,42 @@ export function SOPsPage() {
     setIsNew(false)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editingSop || !editingSop.name.trim()) return
-    if (isNew) {
-      setSops((prev) => [...prev, editingSop])
-    } else {
-      setSops((prev) => prev.map((s) => (s.id === editingSop.id ? editingSop : s)))
+    try {
+      const stagesPayload = editingSop.stages.map((s) => ({
+        name: s.name,
+        role: s.role,
+        prompt: s.prompt,
+      }))
+      if (isNew) {
+        await apiCreateSop({
+          name: editingSop.name,
+          description: editingSop.description || undefined,
+          stages: stagesPayload,
+        })
+      } else {
+        await apiUpdateSop(editingSop.id, {
+          name: editingSop.name,
+          description: editingSop.description || undefined,
+          stages: stagesPayload,
+        })
+      }
+      await refreshSops()
+      setEditingSop(null)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save SOP")
     }
-    setEditingSop(null)
   }
 
-  const handleDelete = () => {
-    if (deleteId) {
-      setSops((prev) => prev.filter((s) => s.id !== deleteId))
+  const handleDelete = async () => {
+    if (!deleteId) return
+    try {
+      await apiDeleteSop(deleteId)
+      await refreshSops()
       setDeleteId(null)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete SOP")
     }
   }
 

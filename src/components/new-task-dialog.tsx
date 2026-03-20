@@ -20,13 +20,12 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useAppState } from "@/lib/store"
-import { SOPS } from "@/lib/sops"
 import { createTask } from "@/lib/api-client"
 import { toast } from "sonner"
 import type { Priority } from "@/lib/types"
 
 export function NewTaskDialog() {
-  const { projects, refreshTasks } = useAppState()
+  const { projects, sops, refreshTasks } = useAppState()
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
@@ -119,7 +118,7 @@ export function NewTaskDialog() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No SOP</SelectItem>
-                {SOPS.map((sop) => (
+                {sops.map((sop) => (
                   <SelectItem key={sop.id} value={sop.id}>
                     {sop.name}
                   </SelectItem>
@@ -133,12 +132,12 @@ export function NewTaskDialog() {
             <div className="bg-muted rounded-md p-3 border border-border">
               <p className="text-[11px] text-muted-foreground mb-1.5">Pipeline stages:</p>
               <div className="flex items-center gap-1 flex-wrap">
-                {SOPS.find((s) => s.id === sopId)?.stages.map((stage, i) => (
+                {sops.find((s) => s.id === sopId)?.stages.map((stage, i) => (
                   <span key={stage.id} className="flex items-center gap-1">
                     <span className="text-[11px] text-foreground/60 bg-accent px-1.5 py-0.5 rounded">
                       {stage.name}
                     </span>
-                    {i < (SOPS.find((s) => s.id === sopId)?.stages.length ?? 0) - 1 && (
+                    {i < (sops.find((s) => s.id === sopId)?.stages.length ?? 0) - 1 && (
                       <span className="text-muted-foreground text-[10px]">→</span>
                     )}
                   </span>
