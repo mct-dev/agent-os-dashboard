@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSession } from "@/lib/auth"
+import { auth } from "@/lib/auth"
 import { serializeTask } from "@/lib/api-helpers"
 
 async function requireSession() {
-  const session = await getSession()
+  const session = await auth()
   if (!session?.user?.email) {
     return null
   }
