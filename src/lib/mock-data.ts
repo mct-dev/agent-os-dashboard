@@ -46,7 +46,7 @@ export const MOCK_TASKS: Task[] = [
     description: "Implement NextAuth with Google and GitHub OAuth. Handle session management, token refresh, and role-based access control.",
     projectId: "laurel", status: "IN_PROGRESS", priority: "HIGH", sopId: "bmad-full",
     createdAt: "2026-03-19T10:00:00Z", updatedAt: "2026-03-19T11:00:00Z",
-    runs: [{ id: "r1", status: "RUNNING", model: "anthropic/claude-opus-4-6", costUsd: 0.42, tokenCount: 12400, startedAt: "2026-03-19T11:00:00Z" }],
+    runs: [{ id: "r1", status: "RUNNING", model: "anthropic/claude-opus-4-6", costUsd: 0.42, tokenCount: 12400, startedAt: "2026-03-19T11:00:00Z", endedAt: null, bridgeRunId: null, prompt: null }],
   },
   {
     id: "2", title: "Regression incident captainship kickoff",
@@ -59,7 +59,7 @@ export const MOCK_TASKS: Task[] = [
     description: "Configure PM2 with --max-memory-restart 1500M for the Paperclip assistant process.",
     projectId: "laurel", status: "DONE", priority: "MEDIUM", sopId: null,
     createdAt: "2026-03-17T08:00:00Z", updatedAt: "2026-03-17T16:00:00Z",
-    runs: [{ id: "r2", status: "COMPLETED", model: "anthropic/claude-sonnet-4-6", costUsd: 0.08, tokenCount: 3200, startedAt: "2026-03-17T15:00:00Z" }],
+    runs: [{ id: "r2", status: "COMPLETED", model: "anthropic/claude-sonnet-4-6", costUsd: 0.08, tokenCount: 3200, startedAt: "2026-03-17T15:00:00Z", endedAt: null, bridgeRunId: null, prompt: null }],
   },
   {
     id: "4", title: "Evening CoS workflow automation",
@@ -90,7 +90,7 @@ export const MOCK_TASKS: Task[] = [
     description: "Set up edge functions for real-time task sync and webhook handlers.",
     projectId: "laurel", status: "IN_REVIEW", priority: "HIGH", sopId: "bmad-full",
     createdAt: "2026-03-16T09:00:00Z", updatedAt: "2026-03-19T08:00:00Z",
-    runs: [{ id: "r3", status: "COMPLETED", model: "anthropic/claude-opus-4-6", costUsd: 1.23, tokenCount: 48200, startedAt: "2026-03-18T16:00:00Z" }],
+    runs: [{ id: "r3", status: "COMPLETED", model: "anthropic/claude-opus-4-6", costUsd: 1.23, tokenCount: 48200, startedAt: "2026-03-18T16:00:00Z", endedAt: null, bridgeRunId: null, prompt: null }],
   },
   {
     id: "9", title: "Fix Linear webhook duplicate events",
@@ -103,7 +103,7 @@ export const MOCK_TASKS: Task[] = [
     description: "Define how agents persist context across runs. Evaluate vector DB vs structured storage.",
     projectId: "personal", status: "IN_PROGRESS", priority: "HIGH", sopId: "quick-think",
     createdAt: "2026-03-17T11:00:00Z", updatedAt: "2026-03-19T10:00:00Z",
-    runs: [{ id: "r4", status: "RUNNING", model: "google/gemini-3-flash-preview", costUsd: 0.02, tokenCount: 4100, startedAt: "2026-03-19T10:00:00Z" }],
+    runs: [{ id: "r4", status: "RUNNING", model: "google/gemini-3-flash-preview", costUsd: 0.02, tokenCount: 4100, startedAt: "2026-03-19T10:00:00Z", endedAt: null, bridgeRunId: null, prompt: null }],
   },
   {
     id: "11", title: "API rate limiter middleware",
@@ -116,7 +116,7 @@ export const MOCK_TASKS: Task[] = [
     description: "Add retry logic and better error messages for the PR monitor cron job.",
     projectId: "personal", status: "DONE", priority: "MEDIUM", sopId: "bmad-dev",
     createdAt: "2026-03-15T09:00:00Z", updatedAt: "2026-03-17T14:00:00Z",
-    runs: [{ id: "r5", status: "COMPLETED", model: "anthropic/claude-sonnet-4-6", costUsd: 0.15, tokenCount: 6800, startedAt: "2026-03-17T13:00:00Z" }],
+    runs: [{ id: "r5", status: "COMPLETED", model: "anthropic/claude-sonnet-4-6", costUsd: 0.15, tokenCount: 6800, startedAt: "2026-03-17T13:00:00Z", endedAt: null, bridgeRunId: null, prompt: null }],
   },
   {
     id: "13", title: "Set up weekly review automation",
@@ -135,7 +135,7 @@ export const MOCK_TASKS: Task[] = [
     description: "Wire up Server-Sent Events for real-time agent run output in the task panel.",
     projectId: "personal", status: "IN_PROGRESS", priority: "URGENT", sopId: "bmad-full",
     createdAt: "2026-03-18T16:00:00Z", updatedAt: "2026-03-19T09:00:00Z",
-    runs: [{ id: "r6", status: "RUNNING", model: "anthropic/claude-opus-4-6", costUsd: 0.67, tokenCount: 22100, startedAt: "2026-03-19T09:00:00Z" }],
+    runs: [{ id: "r6", status: "RUNNING", model: "anthropic/claude-opus-4-6", costUsd: 0.67, tokenCount: 22100, startedAt: "2026-03-19T09:00:00Z", endedAt: null, bridgeRunId: null, prompt: null }],
   },
   {
     id: "16", title: "Onboard new QA agent template",
@@ -148,14 +148,14 @@ export const MOCK_TASKS: Task[] = [
     description: "Create iOS Shortcut that captures links to Apple Reminders → Reading List.",
     projectId: "life", status: "DONE", priority: "LOW", sopId: null,
     createdAt: "2026-03-12T10:00:00Z", updatedAt: "2026-03-14T15:00:00Z",
-    runs: [{ id: "r7", status: "COMPLETED", model: "anthropic/claude-haiku-4-5", costUsd: 0.01, tokenCount: 800, startedAt: "2026-03-14T14:00:00Z" }],
+    runs: [{ id: "r7", status: "COMPLETED", model: "anthropic/claude-haiku-4-5", costUsd: 0.01, tokenCount: 800, startedAt: "2026-03-14T14:00:00Z", endedAt: null, bridgeRunId: null, prompt: null }],
   },
   {
     id: "18", title: "Migrate Prisma to Drizzle ORM",
     description: "Evaluate and migrate from Prisma to Drizzle for better edge runtime support.",
     projectId: "side", status: "IN_REVIEW", priority: "MEDIUM", sopId: "bmad-full",
     createdAt: "2026-03-14T11:00:00Z", updatedAt: "2026-03-18T17:00:00Z",
-    runs: [{ id: "r8", status: "COMPLETED", model: "anthropic/claude-opus-4-6", costUsd: 2.10, tokenCount: 67000, startedAt: "2026-03-18T14:00:00Z" }],
+    runs: [{ id: "r8", status: "COMPLETED", model: "anthropic/claude-opus-4-6", costUsd: 2.10, tokenCount: 67000, startedAt: "2026-03-18T14:00:00Z", endedAt: null, bridgeRunId: null, prompt: null }],
   },
   {
     id: "19", title: "Add Tailscale ACL rules for agent bridge",

@@ -8,10 +8,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import type { Task } from "@/lib/types"
-import { PRIORITY_CONFIG } from "@/lib/types"
+import type { Task, AgentRun } from "@/lib/types"
+import { PRIORITY_CONFIG, LLM_MODELS } from "@/lib/types"
 import { useAppState } from "@/lib/store"
 import { SOPS } from "@/lib/sops"
+import { startRun } from "@/lib/api-client"
+import { toast } from "sonner"
 
 function getSopName(sopId: string | null): string | null {
   if (!sopId) return null
@@ -25,7 +27,7 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, onDelete }: TaskCardProps) {
-  const { setSelectedTaskId, agents, projects } = useAppState()
+  const { setSelectedTaskId, setTasks, agents, projects } = useAppState()
   const lastRun = task.runs[task.runs.length - 1] ?? null
   const priority = PRIORITY_CONFIG[task.priority]
   const project = projects.find((p) => p.id === task.projectId)
@@ -104,9 +106,34 @@ export function TaskCard({ task, onDelete }: TaskCardProps) {
           variant="ghost"
           size="sm"
           className="h-5 px-1.5 text-[10px] opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
-          onClick={(e) => { e.stopPropagation() }}
+          onClick={async (e) => {
+            e.stopPropagation()
+            const model = agent?.model ?? LLM_MODELS[0]
+            const prompt = [task.title, task.description].filter(Boolean).join("\n\n")
+            try {
+              const result = await startRun({ taskId: task.id, model, prompt })
+              const newRun: AgentRun = {
+                id: result.id,
+                status: "RUNNING",
+                model,
+                costUsd: null,
+                tokenCount: null,
+                startedAt: new Date().toISOString(),
+                endedAt: null,
+                bridgeRunId: result.bridgeRunId,
+                prompt,
+              }
+              setTasks((prev) =>
+                prev.map((t) =>
+                  t.id === task.id ? { ...t, runs: [...t.runs, newRun] } : t
+                )
+              )
+            } catch (err) {
+              toast.error(err instanceof Error ? err.message : "Failed to start run")
+            }
+          }}
         >
-          ▶ Run
+          Run
         </Button>
       </div>
     </div>

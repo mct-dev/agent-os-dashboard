@@ -39,6 +39,8 @@ import { useDroppable } from "@dnd-kit/core"
 import { CSS } from "@dnd-kit/utilities"
 import { useAppState } from "@/lib/store"
 import { STATUS_CONFIG, STATUSES, type Status, type Task } from "@/lib/types"
+import { updateTask as apiUpdateTask, deleteTask as apiDeleteTask } from "@/lib/api-client"
+import { toast } from "sonner"
 import { TaskCard } from "@/components/task-card"
 import { TaskPanel } from "@/components/task-panel"
 import { NewTaskDialog } from "@/components/new-task-dialog"
@@ -188,6 +190,9 @@ export function KanbanBoard() {
     const draggedTask = tasks.find((t) => t.id === taskId)
     if (!draggedTask || draggedTask.status === newStatus) return
 
+    const previousStatus = draggedTask.status
+
+    // Optimistic update
     setTasks((prev) =>
       prev.map((t) =>
         t.id === taskId
@@ -195,11 +200,28 @@ export function KanbanBoard() {
           : t
       )
     )
+
+    // Persist to API, revert on failure
+    apiUpdateTask(taskId, { status: newStatus }).catch(() => {
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === taskId
+            ? { ...t, status: previousStatus, updatedAt: draggedTask.updatedAt }
+            : t
+        )
+      )
+      toast.error("Failed to update task status")
+    })
   }
 
-  const handleDelete = () => {
-    if (deleteId) {
+  const handleDelete = async () => {
+    if (!deleteId) return
+    try {
+      await apiDeleteTask(deleteId)
       setTasks((prev) => prev.filter((t) => t.id !== deleteId))
+    } catch {
+      toast.error("Failed to delete task")
+    } finally {
       setDeleteId(null)
     }
   }

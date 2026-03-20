@@ -18,6 +18,9 @@ export interface AgentRun {
   costUsd: number | null
   tokenCount: number | null
   startedAt: string
+  endedAt: string | null
+  bridgeRunId: string | null
+  prompt: string | null
 }
 
 export interface Task {

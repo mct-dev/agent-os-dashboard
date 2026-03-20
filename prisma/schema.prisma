@@ -22,16 +22,18 @@ model Task {
 }
 
 model AgentRun {
-  id         String    @id @default(cuid())
-  taskId     String
-  task       Task      @relation(fields: [taskId], references: [id])
-  status     RunStatus @default(PENDING)
-  model      String    @default("anthropic/claude-opus-4-6")
-  costUsd    Float?
-  tokenCount Int?
-  output     String?
-  startedAt  DateTime  @default(now())
-  endedAt    DateTime?
+  id           String    @id @default(cuid())
+  taskId       String
+  task         Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  bridgeRunId  String?
+  status       RunStatus @default(PENDING)
+  model        String    @default("anthropic/claude-opus-4-6")
+  prompt       String?
+  costUsd      Float?
+  tokenCount   Int?
+  output       String?
+  startedAt    DateTime  @default(now())
+  endedAt      DateTime?
 }
 
 enum Project {
@@ -45,6 +47,7 @@ enum Status {
   BACKLOG
   TODO
   IN_PROGRESS
+  IN_REVIEW
   DONE
   BLOCKED
 }

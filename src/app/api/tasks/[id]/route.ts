@@ -1,0 +1,82 @@
+import { NextRequest, NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
+import { getSession } from "@/lib/auth"
+import { serializeTask, parseProjectId } from "@/lib/api-helpers"
+
+async function requireSession() {
+  const session = await getSession()
+  if (!session?.user?.email) {
+    return null
+  }
+  return session
+}
+
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await requireSession()
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const { id } = await params
+
+  const task = await prisma.task.findUnique({
+    where: { id },
+    include: { runs: { orderBy: { startedAt: "desc" } } },
+  })
+
+  if (!task) {
+    return NextResponse.json({ error: "Task not found" }, { status: 404 })
+  }
+
+  return NextResponse.json(serializeTask(task))
+}
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await requireSession()
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const { id } = await params
+  const body = await req.json()
+
+  // Build update data from allowed fields
+  const data: Record<string, unknown> = {}
+  if (body.title !== undefined) data.title = String(body.title)
+  if (body.description !== undefined) data.description = body.description
+  if (body.status !== undefined) data.status = String(body.status).toUpperCase()
+  if (body.priority !== undefined) data.priority = String(body.priority).toUpperCase()
+  if (body.projectId !== undefined) data.project = parseProjectId(String(body.projectId))
+  if (body.sopId !== undefined) data.sopId = body.sopId
+
+  const task = await prisma.task.update({
+    where: { id },
+    data,
+    include: { runs: { orderBy: { startedAt: "desc" } } },
+  })
+
+  return NextResponse.json(serializeTask(task))
+}
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await requireSession()
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const { id } = await params
+
+  // Cascade delete is configured in Prisma schema (onDelete: Cascade on AgentRun.task)
+  await prisma.task.delete({ where: { id } })
+
+  return NextResponse.json({ ok: true })
+}

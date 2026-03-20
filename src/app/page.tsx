@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { AppContext } from "@/lib/store"
-import { MOCK_TASKS, MOCK_PROJECTS, MOCK_INBOX, MOCK_AGENTS } from "@/lib/mock-data"
+import { MOCK_PROJECTS, MOCK_INBOX, MOCK_AGENTS } from "@/lib/mock-data"
 import { SOPS as DEFAULT_SOPS } from "@/lib/sops"
+import { fetchTasks } from "@/lib/api-client"
 import { Sidebar } from "@/components/sidebar"
 import { KanbanBoard } from "@/components/kanban-board"
 import { InboxPage } from "@/components/inbox-page"
@@ -16,12 +17,25 @@ import type { SOP } from "@/lib/sops"
 
 export default function Dashboard() {
   const [activePage, setActivePage] = useState("board")
-  const [tasks, setTasks] = useState<Task[]>(MOCK_TASKS)
+  const [tasks, setTasks] = useState<Task[]>([])
   const [projects, setProjects] = useState<Project[]>(MOCK_PROJECTS)
   const [inbox, setInbox] = useState<InboxItem[]>(MOCK_INBOX)
   const [agents, setAgents] = useState<AgentConfig[]>(MOCK_AGENTS)
   const [sops, setSops] = useState<SOP[]>([...DEFAULT_SOPS])
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+
+  const refreshTasks = useCallback(async () => {
+    const data = await fetchTasks()
+    setTasks(data)
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    fetchTasks().then((data) => {
+      if (!cancelled) setTasks(data)
+    })
+    return () => { cancelled = true }
+  }, [])
 
   const renderPage = () => {
     switch (activePage) {
@@ -51,6 +65,7 @@ export default function Dashboard() {
         agents, setAgents,
         sops, setSops,
         selectedTaskId, setSelectedTaskId,
+        refreshTasks,
       }}
     >
       <div className="flex min-h-screen">

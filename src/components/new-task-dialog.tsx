@@ -21,11 +21,12 @@ import {
 } from "@/components/ui/select"
 import { useAppState } from "@/lib/store"
 import { SOPS } from "@/lib/sops"
-import { nextTaskId } from "@/lib/mock-data"
-import type { Priority, Status, Task } from "@/lib/types"
+import { createTask } from "@/lib/api-client"
+import { toast } from "sonner"
+import type { Priority } from "@/lib/types"
 
 export function NewTaskDialog() {
-  const { projects, setTasks } = useAppState()
+  const { projects, refreshTasks } = useAppState()
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
@@ -33,27 +34,25 @@ export function NewTaskDialog() {
   const [priority, setPriority] = useState<Priority>("MEDIUM")
   const [sopId, setSopId] = useState<string>("none")
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!title.trim()) return
-    const now = new Date().toISOString()
-    const newTask: Task = {
-      id: nextTaskId(),
-      title: title.trim(),
-      description: description.trim() || null,
-      projectId,
-      status: "TODO" as Status,
-      priority,
-      sopId: sopId === "none" ? null : sopId,
-      createdAt: now,
-      updatedAt: now,
-      runs: [],
+    try {
+      await createTask({
+        title: title.trim(),
+        description: description.trim() || undefined,
+        projectId,
+        priority,
+        sopId: sopId === "none" ? undefined : sopId,
+      })
+      await refreshTasks()
+      setTitle("")
+      setDescription("")
+      setPriority("MEDIUM")
+      setSopId("none")
+      setOpen(false)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create task")
     }
-    setTasks((prev) => [newTask, ...prev])
-    setTitle("")
-    setDescription("")
-    setPriority("MEDIUM")
-    setSopId("none")
-    setOpen(false)
   }
 
   return (
