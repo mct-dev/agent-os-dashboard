@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSession } from "@/lib/auth"
+import { auth } from "@/lib/auth"
 
 async function authenticate(req: NextRequest): Promise<boolean> {
   // Check API key first (external clients like bridge)
@@ -9,7 +9,7 @@ async function authenticate(req: NextRequest): Promise<boolean> {
     return true
   }
   // Fall back to NextAuth session (dashboard)
-  const session = await getSession()
+  const session = await auth()
   if (session?.user?.email) {
     return true
   }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getSession } from "@/lib/auth"
+import { auth } from "@/lib/auth"
 import { serializeTask } from "@/lib/api-helpers"
 
 async function authenticate(req: NextRequest): Promise<boolean> {
@@ -10,7 +10,7 @@ async function authenticate(req: NextRequest): Promise<boolean> {
     return true
   }
   // Fall back to NextAuth session (dashboard)
-  const session = await getSession()
+  const session = await auth()
   if (session?.user?.email) {
     return true
   }
