@@ -13,8 +13,16 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className="antialiased min-h-screen bg-background text-foreground font-sans">
+    <html lang="en" data-theme="dark">
+      <script dangerouslySetInnerHTML={{
+        __html: `
+          try {
+            const theme = localStorage.getItem('daisyui-theme');
+            if (theme) document.documentElement.setAttribute('data-theme', theme);
+          } catch(e) {}
+        `
+      }} />
+      <body className="antialiased min-h-screen bg-base-100 text-base-content font-sans">
         {children}
         <Toaster />
       </body>

@@ -107,7 +107,7 @@ export default function SetupPage() {
   // Step 0: Welcome
   if (step === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="min-h-screen flex items-center justify-center bg-base-100 p-4">
         <Card className="w-full max-w-md p-8 text-center space-y-6">
           <div className="space-y-2">
             <span className="text-4xl">⚡</span>
@@ -116,7 +116,7 @@ export default function SetupPage() {
           <Separator />
           <div className="space-y-3">
             <h2 className="text-lg font-semibold">Welcome to Agent OS</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-sm text-base-content/60 leading-relaxed">
               Your personal AI agent dashboard. Run Claude Code and Codex against
               any task, watch output live, and manage everything from one place.
             </p>
@@ -132,17 +132,17 @@ export default function SetupPage() {
   // Step 1: Auth
   if (step === 1) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="min-h-screen flex items-center justify-center bg-base-100 p-4">
         <Card className="w-full max-w-md p-8 space-y-6">
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">
+            <p className="text-xs text-base-content/60 uppercase tracking-wider">
               Step 1 of 3
             </p>
             <h2 className="text-lg font-semibold">Authentication</h2>
           </div>
           <Separator />
           {sessionStatus === "loading" ? (
-            <p className="text-sm text-muted-foreground">Checking session...</p>
+            <p className="text-sm text-base-content/60">Checking session...</p>
           ) : session?.user?.email ? (
             <div className="space-y-4">
               <div className="flex items-center gap-2">
@@ -152,7 +152,7 @@ export default function SetupPage() {
                   <span className="font-medium">{session.user.email}</span>
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-base-content/60">
                 You&apos;re authenticated. Agent OS uses Google OAuth to secure
                 your dashboard.
               </p>
@@ -162,7 +162,7 @@ export default function SetupPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-base-content/60">
                 Sign in with Google to get started.
               </p>
               <Button className="w-full" onClick={() => signIn("google")}>
@@ -178,16 +178,16 @@ export default function SetupPage() {
   // Step 2: Bridge setup
   if (step === 2) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="min-h-screen flex items-center justify-center bg-base-100 p-4">
         <Card className="w-full max-w-lg p-8 space-y-6">
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider">
+            <p className="text-xs text-base-content/60 uppercase tracking-wider">
               Step 2 of 3
             </p>
             <h2 className="text-lg font-semibold">Local Bridge</h2>
           </div>
           <Separator />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-base-content/60">
             The bridge runs on your Mac and executes Claude Code and Codex
             sessions on your behalf.
           </p>
@@ -254,39 +254,39 @@ export default function SetupPage() {
           <Separator />
 
           <details className="text-sm">
-            <summary className="cursor-pointer text-muted-foreground hover:text-foreground transition-colors">
+            <summary className="cursor-pointer text-base-content/60 hover:text-base-content transition-colors">
               Setup Instructions
             </summary>
-            <div className="mt-3 space-y-3 text-muted-foreground text-xs font-mono bg-muted/50 rounded-md p-4">
-              <p className="text-foreground/60 not-italic font-sans text-xs">Run these commands on the Mac you want agents to run on:</p>
+            <div className="mt-3 space-y-3 text-base-content/60 text-xs font-mono bg-base-200/50 rounded-md p-4">
+              <p className="text-base-content/60 not-italic font-sans text-xs">Run these commands on the Mac you want agents to run on:</p>
               <div>
-                <p className="text-foreground/50">1. Clone the repo</p>
-                <p className="pl-4 text-foreground/80 mt-1">git clone https://github.com/mct-dev/agent-os-dashboard.git ~/agent-os</p>
+                <p className="text-base-content/50">1. Clone the repo</p>
+                <p className="pl-4 text-base-content/80 mt-1">git clone https://github.com/mct-dev/agent-os-dashboard.git ~/agent-os</p>
               </div>
               <div>
-                <p className="text-foreground/50">2. Install the bridge (this generates your API key)</p>
-                <p className="pl-4 text-foreground/80 mt-1">cd ~/agent-os/bridge && bash install.sh</p>
-                <p className="pl-4 text-foreground/60 mt-1"># install.sh will print your API key — copy it and paste it above</p>
-                <p className="pl-4 text-foreground/60 mt-1"># Or run: cat ~/agent-os/bridge/.env | grep BRIDGE_API_KEY</p>
+                <p className="text-base-content/50">2. Install the bridge (this generates your API key)</p>
+                <p className="pl-4 text-base-content/80 mt-1">cd ~/agent-os/bridge && bash install.sh</p>
+                <p className="pl-4 text-base-content/60 mt-1"># install.sh will print your API key — copy it and paste it above</p>
+                <p className="pl-4 text-base-content/60 mt-1"># Or run: cat ~/agent-os/bridge/.env | grep BRIDGE_API_KEY</p>
               </div>
               <div>
-                <p className="text-foreground/50">3. Install Claude Code (optional but recommended)</p>
-                <p className="pl-4 text-foreground/80 mt-1">npm install -g @anthropic-ai/claude-code</p>
+                <p className="text-base-content/50">3. Install Claude Code (optional but recommended)</p>
+                <p className="pl-4 text-base-content/80 mt-1">npm install -g @anthropic-ai/claude-code</p>
               </div>
               <div>
-                <p className="text-foreground/50">4. Start the bridge</p>
-                <p className="pl-4 text-foreground/80 mt-1">cd ~/agent-os/bridge && npm start</p>
+                <p className="text-base-content/50">4. Start the bridge</p>
+                <p className="pl-4 text-base-content/80 mt-1">cd ~/agent-os/bridge && npm start</p>
               </div>
               <div>
-                <p className="text-foreground/50">5. Expose via Tailscale Funnel (required — allows the web app to reach your bridge)</p>
-                <p className="pl-4 text-foreground/80 mt-1">tailscale funnel 4242</p>
-                <p className="pl-4 text-foreground/60 mt-1"># This makes your bridge reachable from the internet, not just your local network</p>
-                <p className="pl-4 text-foreground/60 mt-1"># Note: requires Tailscale installed via Homebrew (not App Store) on macOS</p>
+                <p className="text-base-content/50">5. Expose via Tailscale Funnel (required — allows the web app to reach your bridge)</p>
+                <p className="pl-4 text-base-content/80 mt-1">tailscale funnel 4242</p>
+                <p className="pl-4 text-base-content/60 mt-1"># This makes your bridge reachable from the internet, not just your local network</p>
+                <p className="pl-4 text-base-content/60 mt-1"># Note: requires Tailscale installed via Homebrew (not App Store) on macOS</p>
               </div>
               <div>
-                <p className="text-foreground/50">6. Get your bridge URL</p>
-                <p className="pl-4 text-foreground/80 mt-1">tailscale status --self --json | python3 -c &quot;import json,sys; d=json.load(sys.stdin); print(&apos;https://&apos;+d[&apos;Self&apos;][&apos;DNSName&apos;].rstrip(&apos;.&apos;))&quot;</p>
-                <p className="pl-4 text-foreground/60 mt-1"># Paste this URL into the Bridge URL field above</p>
+                <p className="text-base-content/50">6. Get your bridge URL</p>
+                <p className="pl-4 text-base-content/80 mt-1">tailscale status --self --json | python3 -c &quot;import json,sys; d=json.load(sys.stdin); print(&apos;https://&apos;+d[&apos;Self&apos;][&apos;DNSName&apos;].rstrip(&apos;.&apos;))&quot;</p>
+                <p className="pl-4 text-base-content/60 mt-1"># Paste this URL into the Bridge URL field above</p>
               </div>
             </div>
           </details>
@@ -306,10 +306,10 @@ export default function SetupPage() {
 
   // Step 3: Done
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-base-100 p-4">
       <Card className="w-full max-w-md p-8 space-y-6">
         <div className="space-y-1">
-          <p className="text-xs text-muted-foreground uppercase tracking-wider">
+          <p className="text-xs text-base-content/60 uppercase tracking-wider">
             Step 3 of 3
           </p>
           <h2 className="text-lg font-semibold">All Set</h2>

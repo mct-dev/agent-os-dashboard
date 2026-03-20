@@ -14,6 +14,15 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 
+const DAISY_THEMES = [
+  "light", "dark", "cupcake", "bumblebee", "emerald", "corporate",
+  "synthwave", "retro", "cyberpunk", "valentine", "halloween",
+  "garden", "forest", "aqua", "lofi", "pastel", "fantasy",
+  "wireframe", "black", "luxury", "dracula", "cmyk", "autumn",
+  "business", "acid", "lemonade", "night", "coffee", "winter",
+  "dim", "nord", "sunset", "caramellatte", "abyss", "silk",
+]
+
 interface UserSettings {
   bridgeUrl?: string | null
   bridgeApiKey?: string | null
@@ -34,6 +43,15 @@ export function SettingsPage() {
   const [editName, setEditName] = useState("")
   const [saving, setSaving] = useState(false)
   const [testResult, setTestResult] = useState<{ ok: boolean; error?: string } | null>(null)
+  const [currentTheme, setCurrentTheme] = useState("dark")
+
+  useEffect(() => {
+    const saved = localStorage.getItem('daisyui-theme')
+    if (saved) {
+      setCurrentTheme(saved)
+      document.documentElement.setAttribute('data-theme', saved)
+    }
+  }, [])
 
   const checkBridgeStatus = useCallback(async (url?: string | null, key?: string | null) => {
     if (!url) {
@@ -127,33 +145,33 @@ export function SettingsPage() {
   }
 
   const maskedKey = settings.bridgeApiKey
-    ? "•".repeat(Math.min(settings.bridgeApiKey.length, 20))
-    : "—"
+    ? "\u2022".repeat(Math.min(settings.bridgeApiKey.length, 20))
+    : "\u2014"
 
   const statusBadge = {
     checking: <Badge variant="secondary">Checking...</Badge>,
-    connected: <Badge className="bg-green-600/20 text-green-400 border-green-600/30">🟢 Connected</Badge>,
-    disconnected: <Badge variant="destructive">🔴 Disconnected</Badge>,
-    "not-configured": <Badge variant="secondary">⚙ Not configured</Badge>,
+    connected: <Badge className="badge badge-success badge-outline">Connected</Badge>,
+    disconnected: <Badge variant="destructive">Disconnected</Badge>,
+    "not-configured": <Badge variant="secondary">Not configured</Badge>,
   }
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="shrink-0 border-b border-border px-6 py-3">
-        <h1 className="text-sm font-semibold text-foreground">Settings</h1>
+      <header className="shrink-0 border-b border-base-300 px-6 py-3">
+        <h1 className="text-sm font-semibold text-base-content">Settings</h1>
       </header>
 
       <div className="flex-1 overflow-y-auto p-6 max-w-2xl space-y-8">
         {/* Account */}
         <section className="space-y-3">
-          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          <h2 className="text-xs font-semibold text-base-content/60 uppercase tracking-wider">
             Account
           </h2>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div>
-                <Label className="text-xs text-muted-foreground">Email</Label>
-                <p className="text-sm">{settings.userId || "—"}</p>
+                <Label className="text-xs text-base-content/60">Email</Label>
+                <p className="text-sm">{settings.userId || "\u2014"}</p>
               </div>
               <Button variant="outline" size="sm" onClick={() => window.location.href = "/api/auth/signout"}>
                 Sign out
@@ -166,27 +184,27 @@ export function SettingsPage() {
 
         {/* Bridge */}
         <section className="space-y-4">
-          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          <h2 className="text-xs font-semibold text-base-content/60 uppercase tracking-wider">
             Bridge
           </h2>
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Label className="text-xs text-muted-foreground w-16">Status</Label>
+              <Label className="text-xs text-base-content/60 w-16">Status</Label>
               {statusBadge[bridgeStatus]}
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground">URL</Label>
-              <p className="text-sm font-mono">{settings.bridgeUrl || "—"}</p>
+              <Label className="text-xs text-base-content/60">URL</Label>
+              <p className="text-sm font-mono">{settings.bridgeUrl || "\u2014"}</p>
             </div>
             <div>
-              <Label className="text-xs text-muted-foreground">Name</Label>
-              <p className="text-sm">{settings.bridgeName || "—"}</p>
+              <Label className="text-xs text-base-content/60">Name</Label>
+              <p className="text-sm">{settings.bridgeName || "\u2014"}</p>
             </div>
             <div className="flex items-center gap-2">
               <div className="flex-1">
-                <Label className="text-xs text-muted-foreground">API Key</Label>
+                <Label className="text-xs text-base-content/60">API Key</Label>
                 <p className="text-sm font-mono">
-                  {showApiKey ? settings.bridgeApiKey || "—" : maskedKey}
+                  {showApiKey ? settings.bridgeApiKey || "\u2014" : maskedKey}
                 </p>
               </div>
               {settings.bridgeApiKey && (
@@ -228,11 +246,11 @@ export function SettingsPage() {
 
           <Separator className="my-2" />
 
-          <div className="bg-muted/30 border border-dashed border-border rounded-lg p-4 text-center">
+          <div className="bg-base-200/30 border border-dashed border-base-300 rounded-lg p-4 text-center">
             <Button variant="ghost" size="sm" disabled>
               + Add Bridge
             </Button>
-            <p className="text-[10px] text-muted-foreground mt-1">
+            <p className="text-[10px] text-base-content/60 mt-1">
               Multi-bridge support coming soon
             </p>
           </div>
@@ -240,20 +258,28 @@ export function SettingsPage() {
 
         <Separator />
 
-        {/* Appearance */}
+        {/* Theme Selector */}
         <section className="space-y-3">
-          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          <h2 className="text-xs font-semibold text-base-content/60 uppercase tracking-wider">
             Appearance
           </h2>
-          <div className="flex items-center justify-between">
-            <Label className="text-sm">Theme</Label>
-            <Button variant="outline" size="sm" disabled>
-              Dark
-            </Button>
+          <div className="space-y-2">
+            <label className="text-sm">Theme</label>
+            <select
+              className="select select-bordered select-sm w-full max-w-xs"
+              value={currentTheme}
+              onChange={(e) => {
+                const theme = e.target.value;
+                document.documentElement.setAttribute('data-theme', theme);
+                localStorage.setItem('daisyui-theme', theme);
+                setCurrentTheme(theme);
+              }}
+            >
+              {DAISY_THEMES.map((theme) => (
+                <option key={theme} value={theme}>{theme}</option>
+              ))}
+            </select>
           </div>
-          <p className="text-[10px] text-muted-foreground">
-            Theme switching coming soon
-          </p>
         </section>
 
         <Separator />
@@ -266,7 +292,7 @@ export function SettingsPage() {
           <Button variant="destructive" size="sm" onClick={resetOnboarding}>
             Reset Onboarding
           </Button>
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[10px] text-base-content/60">
             This will reset your onboarding status and redirect you to the setup wizard.
           </p>
         </section>
@@ -313,7 +339,7 @@ export function SettingsPage() {
               </Button>
               {testResult && (
                 <Badge variant={testResult.ok ? "default" : "destructive"}>
-                  {testResult.ok ? "✅ Connected" : `❌ ${testResult.error}`}
+                  {testResult.ok ? "Connected" : `${testResult.error}`}
                 </Badge>
               )}
             </div>
