@@ -1,26 +1,9 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
 import { prisma } from "@/lib/prisma"
-
-async function getAuthOptions() {
-  const GoogleProvider = (await import("next-auth/providers/google")).default
-  return {
-    providers: [
-      GoogleProvider({
-        clientId: process.env.GOOGLE_CLIENT_ID!,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      }),
-    ],
-    callbacks: {
-      async signIn({ profile }: { profile?: { email?: string } }) {
-        return profile?.email === "mike@laurel.ai" || profile?.email === "axis139@gmail.com"
-      },
-    },
-  }
-}
+import { getSession } from "@/lib/auth"
 
 export async function GET() {
-  const session = await getServerSession(await getAuthOptions())
+  const session = await getSession()
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
@@ -33,7 +16,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const session = await getServerSession(await getAuthOptions())
+  const session = await getSession()
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }

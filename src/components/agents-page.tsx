@@ -34,7 +34,12 @@ import {
 import { useAppState } from "@/lib/store"
 import { LLM_MODELS } from "@/lib/types"
 import type { AgentConfig } from "@/lib/types"
-import { SOPS } from "@/lib/sops"
+import {
+  createAgent as apiCreateAgent,
+  updateAgent as apiUpdateAgent,
+  deleteAgent as apiDeleteAgent,
+} from "@/lib/api-client"
+import { toast } from "sonner"
 
 interface ModelOption {
   id: string
@@ -69,7 +74,7 @@ const RUNTIMES = [
 ]
 
 export function AgentsPage() {
-  const { agents, setAgents, sops } = useAppState()
+  const { agents, sops, refreshAgents } = useAppState()
   const [editing, setEditing] = useState<AgentConfig | null>(null)
   const [isNew, setIsNew] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -124,7 +129,6 @@ export function AgentsPage() {
   }
 
   useEffect(() => {
-    setModelsLoading(true)
     fetch("/api/models")
       .then((res) => res.json())
       .then((data: ModelOption[]) => setModels(data))
@@ -168,20 +172,41 @@ export function AgentsPage() {
     setIsNew(false)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editing || !editing.name.trim()) return
-    if (isNew) {
-      setAgents((prev) => [...prev, editing])
-    } else {
-      setAgents((prev) => prev.map((a) => (a.id === editing.id ? editing : a)))
+    try {
+      if (isNew) {
+        await apiCreateAgent({
+          name: editing.name,
+          model: editing.model,
+          description: editing.description,
+          systemPrompt: editing.systemPrompt,
+          defaultSopId: editing.defaultSopId,
+        })
+      } else {
+        await apiUpdateAgent(editing.id, {
+          name: editing.name,
+          model: editing.model,
+          description: editing.description,
+          systemPrompt: editing.systemPrompt,
+          defaultSopId: editing.defaultSopId,
+        })
+      }
+      await refreshAgents()
+      setEditing(null)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save agent")
     }
-    setEditing(null)
   }
 
-  const handleDelete = () => {
-    if (deleteId) {
-      setAgents((prev) => prev.filter((a) => a.id !== deleteId))
+  const handleDelete = async () => {
+    if (!deleteId) return
+    try {
+      await apiDeleteAgent(deleteId)
+      await refreshAgents()
       setDeleteId(null)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete agent")
     }
   }
 

@@ -20,12 +20,12 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useAppState } from "@/lib/store"
-import { SOPS } from "@/lib/sops"
-import { nextTaskId } from "@/lib/mock-data"
-import type { Priority, Status, Task } from "@/lib/types"
+import { createTask } from "@/lib/api-client"
+import { toast } from "sonner"
+import type { Priority } from "@/lib/types"
 
 export function NewTaskDialog() {
-  const { projects, setTasks } = useAppState()
+  const { projects, sops, refreshTasks } = useAppState()
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
@@ -33,27 +33,25 @@ export function NewTaskDialog() {
   const [priority, setPriority] = useState<Priority>("MEDIUM")
   const [sopId, setSopId] = useState<string>("none")
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!title.trim()) return
-    const now = new Date().toISOString()
-    const newTask: Task = {
-      id: nextTaskId(),
-      title: title.trim(),
-      description: description.trim() || null,
-      projectId,
-      status: "TODO" as Status,
-      priority,
-      sopId: sopId === "none" ? null : sopId,
-      createdAt: now,
-      updatedAt: now,
-      runs: [],
+    try {
+      await createTask({
+        title: title.trim(),
+        description: description.trim() || undefined,
+        projectId,
+        priority,
+        sopId: sopId === "none" ? undefined : sopId,
+      })
+      await refreshTasks()
+      setTitle("")
+      setDescription("")
+      setPriority("MEDIUM")
+      setSopId("none")
+      setOpen(false)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create task")
     }
-    setTasks((prev) => [newTask, ...prev])
-    setTitle("")
-    setDescription("")
-    setPriority("MEDIUM")
-    setSopId("none")
-    setOpen(false)
   }
 
   return (
@@ -120,7 +118,7 @@ export function NewTaskDialog() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No SOP</SelectItem>
-                {SOPS.map((sop) => (
+                {sops.map((sop) => (
                   <SelectItem key={sop.id} value={sop.id}>
                     {sop.name}
                   </SelectItem>
@@ -134,12 +132,12 @@ export function NewTaskDialog() {
             <div className="bg-base-200 rounded-md p-3 border border-base-300">
               <p className="text-[11px] text-base-content/60 mb-1.5">Pipeline stages:</p>
               <div className="flex items-center gap-1 flex-wrap">
-                {SOPS.find((s) => s.id === sopId)?.stages.map((stage, i) => (
+                {sops.find((s) => s.id === sopId)?.stages.map((stage, i) => (
                   <span key={stage.id} className="flex items-center gap-1">
                     <span className="text-[11px] text-base-content/60 bg-base-300 px-1.5 py-0.5 rounded">
                       {stage.name}
                     </span>
-                    {i < (SOPS.find((s) => s.id === sopId)?.stages.length ?? 0) - 1 && (
+                    {i < (sops.find((s) => s.id === sopId)?.stages.length ?? 0) - 1 && (
                       <span className="text-base-content/60 text-[10px]">→</span>
                     )}
                   </span>

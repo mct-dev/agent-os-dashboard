@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
   Select,
@@ -39,9 +39,17 @@ import { useDroppable } from "@dnd-kit/core"
 import { CSS } from "@dnd-kit/utilities"
 import { useAppState } from "@/lib/store"
 import { STATUS_CONFIG, STATUSES, type Status, type Task } from "@/lib/types"
+import { updateTask as apiUpdateTask, deleteTask as apiDeleteTask } from "@/lib/api-client"
+import { toast } from "sonner"
 import { TaskCard } from "@/components/task-card"
 import { TaskPanel } from "@/components/task-panel"
 import { NewTaskDialog } from "@/components/new-task-dialog"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 function SortableTaskCard({
   task,
@@ -123,6 +131,81 @@ function DroppableColumn({
   )
 }
 
+function BridgeStatusDot() {
+  const [status, setStatus] = useState<"hidden" | "checking" | "connected" | "disconnected">("hidden")
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function checkBridge() {
+      try {
+        const settingsRes = await fetch("/api/user-settings")
+        if (cancelled || !settingsRes.ok) return
+        const settings = await settingsRes.json()
+        if (cancelled) return
+        if (!settings.bridgeUrl) {
+          setStatus("hidden")
+          return
+        }
+        setStatus("checking")
+        const testRes = await fetch("/api/bridge-test", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bridgeUrl: settings.bridgeUrl,
+            bridgeApiKey: settings.bridgeApiKey ?? "",
+          }),
+        })
+        if (cancelled) return
+        if (!testRes.ok) {
+          setStatus("disconnected")
+          return
+        }
+        const result = await testRes.json()
+        if (cancelled) return
+        setStatus(result.ok ? "connected" : "disconnected")
+      } catch {
+        if (!cancelled) setStatus("disconnected")
+      }
+    }
+
+    checkBridge()
+    return () => { cancelled = true }
+  }, [])
+
+  if (status === "hidden") return null
+
+  const dotColor =
+    status === "connected"
+      ? "bg-emerald-500"
+      : status === "disconnected"
+        ? "bg-red-500"
+        : "bg-muted-foreground/40"
+
+  const label =
+    status === "connected"
+      ? "Bridge connected"
+      : status === "disconnected"
+        ? "Bridge unreachable"
+        : "Checking bridge..."
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span
+            className={`inline-block w-2 h-2 rounded-full shrink-0 ${dotColor}`}
+            aria-label={label}
+          />
+        </TooltipTrigger>
+        <TooltipContent side="bottom">
+          <span>{label}</span>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+}
+
 export function KanbanBoard() {
   const { tasks, setTasks, projects } = useAppState()
   const [projectFilter, setProjectFilter] = useState<string>("all")
@@ -188,6 +271,9 @@ export function KanbanBoard() {
     const draggedTask = tasks.find((t) => t.id === taskId)
     if (!draggedTask || draggedTask.status === newStatus) return
 
+    const previousStatus = draggedTask.status
+
+    // Optimistic update
     setTasks((prev) =>
       prev.map((t) =>
         t.id === taskId
@@ -195,11 +281,28 @@ export function KanbanBoard() {
           : t
       )
     )
+
+    // Persist to API, revert on failure
+    apiUpdateTask(taskId, { status: newStatus }).catch(() => {
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === taskId
+            ? { ...t, status: previousStatus, updatedAt: draggedTask.updatedAt }
+            : t
+        )
+      )
+      toast.error("Failed to update task status")
+    })
   }
 
-  const handleDelete = () => {
-    if (deleteId) {
+  const handleDelete = async () => {
+    if (!deleteId) return
+    try {
+      await apiDeleteTask(deleteId)
       setTasks((prev) => prev.filter((t) => t.id !== deleteId))
+    } catch {
+      toast.error("Failed to delete task")
+    } finally {
       setDeleteId(null)
     }
   }
@@ -223,6 +326,7 @@ export function KanbanBoard() {
               ))}
             </SelectContent>
           </Select>
+          <BridgeStatusDot />
         </div>
         <NewTaskDialog />
       </header>

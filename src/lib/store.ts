@@ -17,6 +17,11 @@ export interface AppState {
   setSops: React.Dispatch<React.SetStateAction<SOP[]>>
   selectedTaskId: string | null
   setSelectedTaskId: (id: string | null) => void
+  refreshTasks: () => Promise<void>
+  refreshProjects: () => Promise<void>
+  refreshAgents: () => Promise<void>
+  refreshSops: () => Promise<void>
+  refreshInbox: () => Promise<void>
 }
 
 export const AppContext = createContext<AppState | null>(null)

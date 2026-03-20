@@ -8,43 +8,120 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model Project {
+  id        String   @id @default(cuid())
+  name      String
+  color     String   @default("#3b82f6")
+  emoji     String   @default("📦")
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tasks     Task[]
+}
+
 model Task {
-  id          String   @id @default(cuid())
+  id          String      @id @default(cuid())
   title       String
   description String?
-  project     Project  @default(PERSONAL)
-  status      Status   @default(BACKLOG)
-  priority    Priority @default(MEDIUM)
+  projectId   String?
+  project     Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  status      Status      @default(BACKLOG)
+  priority    Priority    @default(MEDIUM)
   sopId       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
   runs        AgentRun[]
+  inboxItems  InboxItem[]
 }
 
 model AgentRun {
-  id         String    @id @default(cuid())
-  taskId     String
-  task       Task      @relation(fields: [taskId], references: [id])
-  status     RunStatus @default(PENDING)
-  model      String    @default("anthropic/claude-opus-4-6")
-  costUsd    Float?
-  tokenCount Int?
-  output     String?
-  startedAt  DateTime  @default(now())
-  endedAt    DateTime?
+  id           String      @id @default(cuid())
+  taskId       String
+  task         Task        @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  bridgeRunId  String?
+  status       RunStatus   @default(PENDING)
+  model        String      @default("anthropic/claude-opus-4-6")
+  prompt       String?
+  costUsd      Float?
+  tokenCount   Int?
+  output       String?
+  startedAt    DateTime    @default(now())
+  endedAt      DateTime?
+  inboxItems   InboxItem[]
 }
 
-enum Project {
-  LAUREL
-  PERSONAL
-  SIDE
-  LIFE
+model Sop {
+  id          String        @id @default(cuid())
+  name        String
+  description String        @default("")
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  stages      SopStage[]
+  agents      AgentConfig[]
+}
+
+model SopStage {
+  id        String @id @default(cuid())
+  sopId     String
+  sop       Sop    @relation(fields: [sopId], references: [id], onDelete: Cascade)
+  name      String
+  role      String
+  prompt    String
+  sortOrder Int    @default(0)
+
+  @@index([sopId])
+}
+
+model AgentConfig {
+  id           String   @id @default(cuid())
+  name         String
+  model        String   @default("anthropic/claude-opus-4-6")
+  description  String   @default("")
+  systemPrompt String   @default("")
+  defaultSopId String?
+  defaultSop   Sop?     @relation(fields: [defaultSopId], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model InboxItem {
+  id           String    @id @default(cuid())
+  agentRunId   String?
+  agentRun     AgentRun? @relation(fields: [agentRunId], references: [id], onDelete: SetNull)
+  taskId       String?
+  task         Task?     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  agentName    String
+  taskTitle    String    @default("")
+  question     String
+  priority     Priority  @default(MEDIUM)
+  read         Boolean   @default(false)
+  snoozedUntil DateTime?
+  repliedAt    DateTime?
+  replyText    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([taskId])
+  @@index([read])
+  @@index([agentRunId])
+}
+
+model UserSettings {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  bridgeUrl          String?
+  bridgeApiKey       String?
+  bridgeName         String?
+  onboardingComplete Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
 enum Status {
   BACKLOG
   TODO
   IN_PROGRESS
+  IN_REVIEW
   DONE
   BLOCKED
 }
@@ -54,17 +131,6 @@ enum Priority {
   MEDIUM
   HIGH
   URGENT
-}
-
-model UserSettings {
-  id                 String   @id @default(cuid())
-  userId             String   @unique // email (from Google OAuth)
-  bridgeUrl          String?  // e.g. https://macbook-pro.tailf13a13.ts.net
-  bridgeApiKey       String?  // encrypted API key
-  bridgeName         String?  // friendly name e.g. "Work MacBook"
-  onboardingComplete Boolean  @default(false)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
 }
 
 enum RunStatus {

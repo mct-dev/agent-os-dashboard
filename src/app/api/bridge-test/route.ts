@@ -1,25 +1,8 @@
 import { NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
-
-async function getAuthOptions() {
-  const GoogleProvider = (await import("next-auth/providers/google")).default
-  return {
-    providers: [
-      GoogleProvider({
-        clientId: process.env.GOOGLE_CLIENT_ID!,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      }),
-    ],
-    callbacks: {
-      async signIn({ profile }: { profile?: { email?: string } }) {
-        return profile?.email === "mike@laurel.ai" || profile?.email === "axis139@gmail.com"
-      },
-    },
-  }
-}
+import { getSession } from "@/lib/auth"
 
 export async function POST(req: Request) {
-  const session = await getServerSession(await getAuthOptions())
+  const session = await getSession()
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
@@ -65,7 +48,7 @@ export async function POST(req: Request) {
         // Node undici wraps the real error in .cause
         const cause = (err as Error & { cause?: Error }).cause
         message = cause?.message ?? err.message
-        // "fetch failed" alone is useless — surface the underlying reason
+        // "fetch failed" alone is useless - surface the underlying reason
         if (err.message === "fetch failed" && cause) {
           const code = (cause as NodeJS.ErrnoException).code
           if (code === "ENOTFOUND") {

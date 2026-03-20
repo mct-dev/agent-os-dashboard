@@ -33,3 +33,12 @@ export function broadcastChunk(runId: string, entry: LogEntry) {
     }
   }
 }
+
+export function broadcastStatus(runId: string, status: string) {
+  const payload = JSON.stringify({ type: "run.status", runId, status, ts: Date.now() })
+  for (const [ws, meta] of clients) {
+    if (ws.readyState === WebSocket.OPEN && (!meta.runId || meta.runId === runId)) {
+      ws.send(payload)
+    }
+  }
+}

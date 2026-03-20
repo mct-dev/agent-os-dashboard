@@ -1,42 +1,68 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { useAppState } from "@/lib/store"
 import { PRIORITY_CONFIG } from "@/lib/types"
+import {
+  updateInboxItem as apiUpdateInboxItem,
+  deleteInboxItem as apiDeleteInboxItem,
+} from "@/lib/api-client"
+import { toast } from "sonner"
 
 export function InboxPage() {
-  const { inbox, setInbox } = useAppState()
+  const { inbox, refreshInbox } = useAppState()
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replyText, setReplyText] = useState("")
 
   const sortedItems = [...inbox].sort((a, b) => {
     if (a.read !== b.read) return a.read ? 1 : -1
-    return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   })
 
-  const markRead = (id: string) => {
-    setInbox((prev) => prev.map((i) => (i.id === id ? { ...i, read: true } : i)))
+  const markRead = async (id: string) => {
+    try {
+      await apiUpdateInboxItem(id, { read: true })
+      await refreshInbox()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to mark as read")
+    }
   }
 
-  const dismiss = (id: string) => {
-    setInbox((prev) => prev.filter((i) => i.id !== id))
+  const dismiss = async (id: string) => {
+    try {
+      await apiDeleteInboxItem(id)
+      await refreshInbox()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to dismiss item")
+    }
   }
 
-  const snooze = (id: string) => {
+  const snooze = useCallback(async (id: string) => {
     const snoozedUntil = new Date(Date.now() + 60 * 60 * 1000).toISOString()
-    setInbox((prev) =>
-      prev.map((i) => (i.id === id ? { ...i, snoozedUntil, read: true } : i))
-    )
-  }
+    try {
+      await apiUpdateInboxItem(id, { snoozedUntil })
+      await refreshInbox()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to snooze item")
+    }
+  }, [refreshInbox])
 
-  const handleReply = (id: string) => {
+  const handleReply = async (id: string) => {
     if (!replyText.trim()) return
-    dismiss(id)
-    setReplyingTo(null)
-    setReplyText("")
+    try {
+      await apiUpdateInboxItem(id, {
+        replyText: replyText.trim(),
+        repliedAt: new Date().toISOString(),
+      })
+      await refreshInbox()
+      setReplyingTo(null)
+      setReplyText("")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to send reply")
+    }
   }
 
   return (
@@ -150,7 +176,7 @@ export function InboxPage() {
                           Dismiss
                         </Button>
                         <span className="ml-auto text-[10px] text-base-content/30">
-                          {new Date(item.timestamp).toLocaleString()}
+                          {new Date(item.createdAt).toLocaleString()}
                         </span>
                       </div>
                     )}

@@ -1,7 +1,7 @@
 import { runChildProcess } from "./process-runner.js"
 import { getDb } from "./db.js"
 import { appendLog } from "./log-store.js"
-import { broadcastChunk } from "./websocket.js"
+import { broadcastChunk, broadcastStatus } from "./websocket.js"
 
 export async function spawnClaudeRun(run: {
   id: string
@@ -81,11 +81,13 @@ export async function spawnClaudeRun(run: {
     db.prepare(
       "UPDATE runs SET status = ?, exit_code = ?, ended_at = ? WHERE id = ?"
     ).run(newStatus, result.exitCode, Date.now(), run.id)
+    broadcastStatus(run.id, newStatus)
   } catch (err) {
     db.prepare("UPDATE runs SET status = 'failed', ended_at = ? WHERE id = ?").run(
       Date.now(),
       run.id
     )
+    broadcastStatus(run.id, "failed")
     throw err
   }
 }
