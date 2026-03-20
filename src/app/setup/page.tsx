@@ -264,9 +264,10 @@ export default function SetupPage() {
                 <p className="pl-4 text-foreground/80 mt-1">git clone https://github.com/mct-dev/agent-os-dashboard.git ~/agent-os</p>
               </div>
               <div>
-                <p className="text-foreground/50">2. Install the bridge</p>
+                <p className="text-foreground/50">2. Install the bridge (this generates your API key)</p>
                 <p className="pl-4 text-foreground/80 mt-1">cd ~/agent-os/bridge && bash install.sh</p>
-                <p className="pl-4 text-foreground/60 mt-1"># This generates your API key — copy it!</p>
+                <p className="pl-4 text-foreground/60 mt-1"># install.sh will print your API key — copy it and paste it above</p>
+                <p className="pl-4 text-foreground/60 mt-1"># Or run: cat ~/agent-os/bridge/.env | grep BRIDGE_API_KEY</p>
               </div>
               <div>
                 <p className="text-foreground/50">3. Install Claude Code (optional but recommended)</p>
