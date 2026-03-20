@@ -5,30 +5,33 @@ import { getToken } from "next-auth/jwt"
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Skip API routes, setup page, auth routes, and static assets
+  // Always allow: API routes, auth routes, static assets
   if (
     pathname.startsWith("/api") ||
-    pathname.startsWith("/setup") ||
     pathname.startsWith("/_next") ||
     pathname === "/favicon.ico"
   ) {
     return NextResponse.next()
   }
 
-  // Check if user has a session token
+  // Check for a valid session token
   const token = await getToken({ req: request })
+
+  // Not signed in — redirect to sign-in page
   if (!token?.email) {
-    return NextResponse.next()
+    const signInUrl = new URL("/api/auth/signin", request.url)
+    signInUrl.searchParams.set("callbackUrl", request.url)
+    return NextResponse.redirect(signInUrl)
   }
 
-  // If user has session but hasn't completed onboarding, we check via cookie
-  // The /setup page and completeOnboarding set this cookie
-  const onboarded = request.cookies.get("onboarding-complete")?.value
-  if (onboarded !== "true") {
-    // First visit or not onboarded — redirect to setup
-    // Setup page will check DB and skip if already complete
-    const setupUrl = new URL("/setup", request.url)
-    return NextResponse.redirect(setupUrl)
+  // Signed in but not yet onboarded — redirect to setup
+  // (except if already on /setup to avoid redirect loop)
+  if (pathname !== "/setup") {
+    const onboarded = request.cookies.get("onboarding-complete")?.value
+    if (onboarded !== "true") {
+      const setupUrl = new URL("/setup", request.url)
+      return NextResponse.redirect(setupUrl)
+    }
   }
 
   return NextResponse.next()
