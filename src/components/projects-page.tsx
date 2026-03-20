@@ -169,6 +169,16 @@ export function ProjectsPage() {
                       {emoji}
                     </button>
                   ))}
+                  <input
+                    type="text"
+                    placeholder="Type any emoji"
+                    value={EMOJIS.includes(editing.emoji) ? "" : editing.emoji}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val) setEditing({ ...editing, emoji: val.slice(-2) });
+                    }}
+                    className="input input-bordered input-sm w-28 text-center text-lg h-8"
+                  />
                 </div>
               </div>
 

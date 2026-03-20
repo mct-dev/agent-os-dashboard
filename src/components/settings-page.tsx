@@ -263,8 +263,8 @@ export function SettingsPage() {
           <h2 className="text-xs font-semibold text-base-content/60 uppercase tracking-wider">
             Appearance
           </h2>
-          <div className="space-y-2">
-            <label className="text-sm">Theme</label>
+          <div className="flex items-center gap-4">
+            <label className="text-sm shrink-0">Theme</label>
             <select
               className="select select-bordered select-sm w-full max-w-xs"
               value={currentTheme}
