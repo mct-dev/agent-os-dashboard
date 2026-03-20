@@ -67,10 +67,10 @@ export function InboxPage() {
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="shrink-0 border-b border-border px-6 py-3 flex items-center justify-between">
+      <header className="shrink-0 border-b border-base-300 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-sm font-semibold text-foreground">Inbox</h1>
-          <span className="text-[11px] text-muted-foreground">
+          <h1 className="text-sm font-semibold text-base-content">Inbox</h1>
+          <span className="text-[11px] text-base-content/60">
             {inbox.filter((i) => !i.read).length} unread
           </span>
         </div>
@@ -78,7 +78,7 @@ export function InboxPage() {
 
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {sortedItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+          <div className="flex flex-col items-center justify-center h-64 text-base-content/60">
             <span className="text-3xl mb-3">🎉</span>
             <p className="text-sm">All clear — no pending items</p>
           </div>
@@ -88,8 +88,8 @@ export function InboxPage() {
             return (
               <div
                 key={item.id}
-                className={`bg-card border rounded-lg p-4 transition-all ${
-                  item.read ? "border-border/50 opacity-60" : "border-border"
+                className={`bg-base-200 border rounded-lg p-4 transition-all ${
+                  item.read ? "border-base-300/50 opacity-60" : "border-base-300"
                 }`}
                 onClick={() => markRead(item.id)}
               >
@@ -102,9 +102,9 @@ export function InboxPage() {
                   <div className="flex-1 min-w-0">
                     {/* Header */}
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-medium text-foreground/80">🤖 {item.agentName}</span>
-                      <span className="text-[11px] text-muted-foreground">on</span>
-                      <span className="text-xs text-muted-foreground truncate">{item.taskTitle}</span>
+                      <span className="text-xs font-medium text-base-content/80">🤖 {item.agentName}</span>
+                      <span className="text-[11px] text-base-content/60">on</span>
+                      <span className="text-xs text-base-content/60 truncate">{item.taskTitle}</span>
                       <Badge
                         variant={
                           item.priority === "URGENT" ? "destructive" :
@@ -118,7 +118,7 @@ export function InboxPage() {
                     </div>
 
                     {/* Question */}
-                    <p className="text-[13px] text-foreground/70 leading-relaxed mb-3">
+                    <p className="text-[13px] text-base-content/70 leading-relaxed mb-3">
                       {item.question}
                     </p>
 
@@ -162,7 +162,7 @@ export function InboxPage() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-6 text-[11px] text-muted-foreground"
+                          className="h-6 text-[11px] text-base-content/60"
                           onClick={(e) => { e.stopPropagation(); snooze(item.id) }}
                         >
                           Snooze 1h
@@ -170,12 +170,12 @@ export function InboxPage() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-6 text-[11px] text-muted-foreground"
+                          className="h-6 text-[11px] text-base-content/60"
                           onClick={(e) => { e.stopPropagation(); dismiss(item.id) }}
                         >
                           Dismiss
                         </Button>
-                        <span className="ml-auto text-[10px] text-muted-foreground/50">
+                        <span className="ml-auto text-[10px] text-base-content/30">
                           {new Date(item.createdAt).toLocaleString()}
                         </span>
                       </div>

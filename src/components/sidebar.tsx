@@ -32,54 +32,61 @@ export function Sidebar({ activePage, onNavigate }: SidebarProps) {
   ]
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-[220px] bg-sidebar border-r border-sidebar-border flex flex-col z-50">
+    <aside className="fixed left-0 top-0 bottom-0 w-[220px] bg-base-200 border-r border-base-300 flex flex-col z-50">
       {/* Logo */}
       <div className="px-4 py-5 flex items-center gap-2">
         <span className="text-lg">⚡</span>
-        <span className="font-semibold text-sm tracking-tight text-sidebar-foreground">Agent OS</span>
+        <span className="font-semibold text-sm tracking-tight text-base-content">Agent OS</span>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-2 space-y-0.5">
-        {navItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => onNavigate(item.id)}
-            className={cn(
-              "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-[13px] transition-colors",
-              activePage === item.id
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground/50 hover:text-sidebar-foreground/80 hover:bg-sidebar-accent/50"
-            )}
-          >
-            <span className="text-sm w-5 text-center shrink-0">{item.icon}</span>
-            <span className="flex-1 text-left">{item.label}</span>
-            {item.badge && item.badge > 0 && (
-              <span className="bg-primary text-primary-foreground text-[10px] font-medium px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
-                {item.badge}
-              </span>
-            )}
-          </button>
-        ))}
+      <nav className="flex-1 px-2">
+        <ul className="menu menu-sm p-0">
+          {navItems.map((item) => (
+            <li key={item.id}>
+              <button
+                onClick={() => onNavigate(item.id)}
+                className={cn(
+                  "flex items-center gap-2.5 text-[13px]",
+                  activePage === item.id
+                    ? "active"
+                    : "text-base-content/50 hover:text-base-content/80"
+                )}
+              >
+                <span className="text-sm w-5 text-center shrink-0">{item.icon}</span>
+                <span className="flex-1 text-left">{item.label}</span>
+                {item.badge && item.badge > 0 && (
+                  <span className="badge badge-primary badge-sm text-[10px]">
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
       </nav>
 
       {/* Settings at bottom */}
       <div className="px-2 pb-4">
-        <button
-          onClick={() => onNavigate("settings")}
-          className={cn(
-            "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-[13px] transition-colors",
-            activePage === "settings"
-              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-              : "text-sidebar-foreground/50 hover:text-sidebar-foreground/80 hover:bg-sidebar-accent/50"
-          )}
-        >
-          <span className="text-sm w-5 text-center">⚙️</span>
-          <span className="flex-1 text-left">Settings</span>
-          {!onboardingComplete && (
-            <span className="text-amber-400 text-xs" title="Setup incomplete">⚠️</span>
-          )}
-        </button>
+        <ul className="menu menu-sm p-0">
+          <li>
+            <button
+              onClick={() => onNavigate("settings")}
+              className={cn(
+                "flex items-center gap-2.5 text-[13px]",
+                activePage === "settings"
+                  ? "active"
+                  : "text-base-content/50 hover:text-base-content/80"
+              )}
+            >
+              <span className="text-sm w-5 text-center">⚙️</span>
+              <span className="flex-1 text-left">Settings</span>
+              {!onboardingComplete && (
+                <span className="text-amber-400 text-xs" title="Setup incomplete">⚠️</span>
+              )}
+            </button>
+          </li>
+        </ul>
       </div>
     </aside>
   )

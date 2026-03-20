@@ -203,8 +203,8 @@ export function TaskPanel() {
             {/* Header */}
             <SheetHeader className="px-6 pt-6 pb-4">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono text-muted-foreground">AGT-{task.id}</span>
-                <span className="text-muted-foreground">{"\u2192"}</span>
+                <span className="text-xs font-mono text-base-content/60">AGT-{task.id}</span>
+                <span className="text-base-content/60">→</span>
                 <Badge
                   variant="outline"
                   className={`text-[10px] px-1.5 py-0 h-5 ${PRIORITY_CONFIG[task.priority].color}`}
@@ -255,13 +255,13 @@ export function TaskPanel() {
                   value={task.title}
                   onChange={(e) => updateTaskLocal({ title: e.target.value })}
                   onBlur={(e) => handleTitleBlur(e.target.value)}
-                  className="text-xl font-semibold bg-transparent border-none px-0 h-auto focus-visible:ring-0 focus-visible:border-b focus-visible:border-border focus-visible:rounded-none"
+                  className="text-xl font-semibold bg-transparent border-none px-0 h-auto focus-visible:ring-0 focus-visible:border-b focus-visible:border-base-300 focus-visible:rounded-none"
                 />
               </div>
 
               {/* Metadata Grid */}
               <div className="grid grid-cols-[120px_1fr] items-center gap-y-3 py-4">
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Status</span>
+                <span className="text-xs text-base-content/60 font-medium uppercase tracking-wide">Status</span>
                 <Select
                   value={task.status}
                   onValueChange={(v) => handleSelectChange("status", v)}
@@ -281,7 +281,7 @@ export function TaskPanel() {
                   </SelectContent>
                 </Select>
 
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Priority</span>
+                <span className="text-xs text-base-content/60 font-medium uppercase tracking-wide">Priority</span>
                 <Select
                   value={task.priority}
                   onValueChange={(v) => handleSelectChange("priority", v)}
@@ -300,7 +300,7 @@ export function TaskPanel() {
                   </SelectContent>
                 </Select>
 
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Project</span>
+                <span className="text-xs text-base-content/60 font-medium uppercase tracking-wide">Project</span>
                 <Select
                   value={task.projectId}
                   onValueChange={(v) => handleSelectChange("projectId", v)}
@@ -317,7 +317,7 @@ export function TaskPanel() {
                   </SelectContent>
                 </Select>
 
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">SOP</span>
+                <span className="text-xs text-base-content/60 font-medium uppercase tracking-wide">SOP</span>
                 <Select
                   value={task.sopId ?? "none"}
                   onValueChange={(v) => handleSelectChange("sopId", v === "none" ? null : v)}
@@ -340,7 +340,7 @@ export function TaskPanel() {
 
               {/* Description */}
               <div className="py-4">
-                <label className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-2 block">
+                <label className="text-xs text-base-content/60 uppercase tracking-wide font-medium mb-2 block">
                   Description
                 </label>
                 <Textarea
@@ -357,20 +357,20 @@ export function TaskPanel() {
 
               {/* Run History */}
               <div className="py-4">
-                <h3 className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-3">
+                <h3 className="text-xs text-base-content/60 uppercase tracking-wide font-medium mb-3">
                   Run History
                 </h3>
                 {task.runs.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No runs yet</p>
+                  <p className="text-sm text-base-content/60">No runs yet</p>
                 ) : (
                   <div className="space-y-2">
                     {task.runs.map((run) => (
                       <div
                         key={run.id}
-                        className="bg-muted rounded-md p-3 border border-border"
+                        className="bg-base-200 rounded-md p-3 border border-base-300"
                       >
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-mono text-muted-foreground">{run.model}</span>
+                          <span className="text-xs font-mono text-base-content/60">{run.model}</span>
                           <Badge
                             variant={
                               run.status === "COMPLETED" ? "secondary" :
@@ -382,7 +382,7 @@ export function TaskPanel() {
                             {run.status}
                           </Badge>
                         </div>
-                        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                        <div className="flex items-center gap-3 text-[11px] text-base-content/60">
                           {run.costUsd !== null && (
                             <span className="text-emerald-400/70">${run.costUsd.toFixed(2)}</span>
                           )}
@@ -415,7 +415,7 @@ export function TaskPanel() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="mt-2 h-6 text-[11px] text-destructive"
+                              className="mt-2 h-6 text-[11px] text-error"
                               onClick={() => handleStopRun(run)}
                             >
                               Stop

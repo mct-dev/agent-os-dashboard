@@ -56,7 +56,7 @@ function StageBuilder({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <label className="text-xs text-muted-foreground">Pipeline Stages</label>
+        <label className="text-xs text-base-content/60">Pipeline Stages</label>
         <Button
           type="button"
           variant="outline"
@@ -68,9 +68,9 @@ function StageBuilder({
         </Button>
       </div>
       {stages.map((stage, i) => (
-        <div key={stage.id} className="bg-muted border border-border rounded-md p-3 space-y-2">
+        <div key={stage.id} className="bg-base-200 border border-base-300 rounded-md p-3 space-y-2">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-muted-foreground w-5">{i + 1}.</span>
+            <span className="text-[11px] text-base-content/60 w-5">{i + 1}.</span>
             <Input
               value={stage.name}
               onChange={(e) => updateStage(i, { name: e.target.value })}
@@ -87,7 +87,7 @@ function StageBuilder({
               type="button"
               variant="ghost"
               size="sm"
-              className="h-6 text-[11px] text-destructive/60 hover:text-destructive px-1.5"
+              className="h-6 text-[11px] text-error/60 hover:text-error px-1.5"
               onClick={() => removeStage(i)}
             >
               ✕
@@ -103,7 +103,7 @@ function StageBuilder({
         </div>
       ))}
       {stages.length === 0 && (
-        <p className="text-xs text-muted-foreground text-center py-4">
+        <p className="text-xs text-base-content/60 text-center py-4">
           No stages yet — add one to define your pipeline
         </p>
       )}
@@ -173,8 +173,8 @@ export function SOPsPage() {
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="shrink-0 border-b border-border px-6 py-3 flex items-center justify-between">
-        <h1 className="text-sm font-semibold text-foreground">SOPs / Pipelines</h1>
+      <header className="shrink-0 border-b border-base-300 px-6 py-3 flex items-center justify-between">
+        <h1 className="text-sm font-semibold text-base-content">SOPs / Pipelines</h1>
         <Button size="sm" onClick={openNew}>
           + New SOP
         </Button>
@@ -184,12 +184,12 @@ export function SOPsPage() {
         {sops.map((sop) => (
           <div
             key={sop.id}
-            className="bg-card border border-border rounded-lg p-4 hover:border-border/80 transition-colors cursor-pointer"
+            className="bg-base-200 border border-base-300 rounded-lg p-4 hover:border-base-300/80 transition-colors cursor-pointer"
             onClick={() => openEdit(sop)}
           >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-medium text-foreground">{sop.name}</h3>
+                <h3 className="text-sm font-medium text-base-content">{sop.name}</h3>
                 <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5">
                   {sop.stages.length} stages
                 </Badge>
@@ -197,21 +197,21 @@ export function SOPsPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 text-[11px] text-destructive/60 hover:text-destructive"
+                className="h-6 text-[11px] text-error/60 hover:text-error"
                 onClick={(e) => { e.stopPropagation(); setDeleteId(sop.id) }}
               >
                 Delete
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground mb-3">{sop.description}</p>
+            <p className="text-xs text-base-content/60 mb-3">{sop.description}</p>
             <div className="flex items-center gap-1 flex-wrap">
               {sop.stages.map((stage, i) => (
                 <span key={stage.id} className="flex items-center gap-1">
-                  <span className="text-[11px] text-foreground/50 bg-muted px-1.5 py-0.5 rounded">
+                  <span className="text-[11px] text-base-content/50 bg-base-200 px-1.5 py-0.5 rounded">
                     {stage.name}
                   </span>
                   {i < sop.stages.length - 1 && (
-                    <span className="text-muted-foreground text-[10px]">→</span>
+                    <span className="text-base-content/60 text-[10px]">→</span>
                   )}
                 </span>
               ))}
@@ -231,7 +231,7 @@ export function SOPsPage() {
           {editingSop && (
             <div className="space-y-4 py-2">
               <div>
-                <label className="text-xs text-muted-foreground block mb-1">Name</label>
+                <label className="text-xs text-base-content/60 block mb-1">Name</label>
                 <Input
                   value={editingSop.name}
                   onChange={(e) => setEditingSop({ ...editingSop, name: e.target.value })}
@@ -239,7 +239,7 @@ export function SOPsPage() {
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground block mb-1">Description</label>
+                <label className="text-xs text-base-content/60 block mb-1">Description</label>
                 <Input
                   value={editingSop.description}
                   onChange={(e) => setEditingSop({ ...editingSop, description: e.target.value })}
@@ -272,7 +272,7 @@ export function SOPsPage() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-error text-error-content hover:bg-error/90"
             >
               Delete
             </AlertDialogAction>
