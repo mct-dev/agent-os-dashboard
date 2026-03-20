@@ -257,19 +257,34 @@ export default function SetupPage() {
             <summary className="cursor-pointer text-muted-foreground hover:text-foreground transition-colors">
               Setup Instructions
             </summary>
-            <div className="mt-3 space-y-2 text-muted-foreground text-xs font-mono bg-muted/50 rounded-md p-4">
-              <p>1. Navigate to the bridge directory:</p>
-              <p className="pl-4 text-foreground/80">cd bridge && ./install.sh</p>
-              <p className="mt-2">2. Start the bridge:</p>
-              <p className="pl-4 text-foreground/80">npm start</p>
-              <p className="mt-2">3. Expose via Tailscale:</p>
-              <p className="pl-4 text-foreground/80">
-                tailscale serve --bg http://127.0.0.1:4242
-              </p>
-              <p className="mt-2">4. Your bridge URL will be:</p>
-              <p className="pl-4 text-foreground/80">
-                https://&lt;machine-name&gt;.&lt;tailnet&gt;.ts.net
-              </p>
+            <div className="mt-3 space-y-3 text-muted-foreground text-xs font-mono bg-muted/50 rounded-md p-4">
+              <p className="text-foreground/60 not-italic font-sans text-xs">Run these commands on the Mac you want agents to run on:</p>
+              <div>
+                <p className="text-foreground/50">1. Clone the repo</p>
+                <p className="pl-4 text-foreground/80 mt-1">git clone https://github.com/mct-dev/agent-os-dashboard.git ~/agent-os</p>
+              </div>
+              <div>
+                <p className="text-foreground/50">2. Install the bridge</p>
+                <p className="pl-4 text-foreground/80 mt-1">cd ~/agent-os/bridge && bash install.sh</p>
+                <p className="pl-4 text-foreground/60 mt-1"># This generates your API key — copy it!</p>
+              </div>
+              <div>
+                <p className="text-foreground/50">3. Install Claude Code (optional but recommended)</p>
+                <p className="pl-4 text-foreground/80 mt-1">npm install -g @anthropic-ai/claude-code</p>
+              </div>
+              <div>
+                <p className="text-foreground/50">4. Start the bridge</p>
+                <p className="pl-4 text-foreground/80 mt-1">cd ~/agent-os/bridge && npm start</p>
+              </div>
+              <div>
+                <p className="text-foreground/50">5. Expose via Tailscale (for remote access)</p>
+                <p className="pl-4 text-foreground/80 mt-1">tailscale serve --bg http://127.0.0.1:4242</p>
+              </div>
+              <div>
+                <p className="text-foreground/50">6. Get your bridge URL</p>
+                <p className="pl-4 text-foreground/80 mt-1">tailscale status | grep &lt;this-machine&gt;</p>
+                <p className="pl-4 text-foreground/60 mt-1"># URL format: https://&lt;machine-name&gt;.&lt;tailnet&gt;.ts.net</p>
+              </div>
             </div>
           </details>
 
