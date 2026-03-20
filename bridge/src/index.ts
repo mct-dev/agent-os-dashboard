@@ -138,11 +138,21 @@ async function main() {
   const server = createServer(app)
   initWebSocket(server)
 
-  server.listen(PORT, () => {
+  server.listen(PORT, async () => {
     console.log(`Agent OS Bridge running on port ${PORT}`)
-    console.log(
-      `Tailscale URL: https://macbook-pro.tailf13a13.ts.net/api/...`
-    )
+    try {
+      const { execSync } = await import("child_process")
+      const tsHost = execSync("tailscale status --self --json 2>/dev/null", { encoding: "utf8" })
+      const ts = JSON.parse(tsHost)
+      const hostname = ts?.Self?.DNSName?.replace(/\.$/, "") ?? null
+      if (hostname) {
+        console.log(`Tailscale URL: https://${hostname}/api/...`)
+      } else {
+        console.log(`Tailscale URL: (not available — is Tailscale running?)`)
+      }
+    } catch {
+      console.log(`Tailscale URL: (could not detect — is Tailscale running?)`)
+    }
   })
 }
 
