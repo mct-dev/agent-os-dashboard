@@ -278,13 +278,15 @@ export default function SetupPage() {
                 <p className="pl-4 text-foreground/80 mt-1">cd ~/agent-os/bridge && npm start</p>
               </div>
               <div>
-                <p className="text-foreground/50">5. Expose via Tailscale (for remote access)</p>
-                <p className="pl-4 text-foreground/80 mt-1">tailscale serve --bg http://127.0.0.1:4242</p>
+                <p className="text-foreground/50">5. Expose via Tailscale Funnel (required — allows the web app to reach your bridge)</p>
+                <p className="pl-4 text-foreground/80 mt-1">tailscale funnel 4242</p>
+                <p className="pl-4 text-foreground/60 mt-1"># This makes your bridge reachable from the internet, not just your local network</p>
+                <p className="pl-4 text-foreground/60 mt-1"># Note: requires Tailscale installed via Homebrew (not App Store) on macOS</p>
               </div>
               <div>
                 <p className="text-foreground/50">6. Get your bridge URL</p>
-                <p className="pl-4 text-foreground/80 mt-1">tailscale status | grep &lt;this-machine&gt;</p>
-                <p className="pl-4 text-foreground/60 mt-1"># URL format: https://&lt;machine-name&gt;.&lt;tailnet&gt;.ts.net</p>
+                <p className="pl-4 text-foreground/80 mt-1">tailscale status --self --json | python3 -c &quot;import json,sys; d=json.load(sys.stdin); print(&apos;https://&apos;+d[&apos;Self&apos;][&apos;DNSName&apos;].rstrip(&apos;.&apos;))&quot;</p>
+                <p className="pl-4 text-foreground/60 mt-1"># Paste this URL into the Bridge URL field above</p>
               </div>
             </div>
           </details>
