@@ -32,7 +32,7 @@ export async function POST(req: Request) {
 
   try {
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 5000)
+    const timeout = setTimeout(() => controller.abort(), 30000)
 
     const url = bridgeUrl.replace(/\/+$/, "") + "/api/health"
     const res = await fetch(url, {
@@ -57,12 +57,29 @@ export async function POST(req: Request) {
       version: data.version ?? "unknown",
     })
   } catch (err: unknown) {
-    const message =
-      err instanceof Error
-        ? err.name === "AbortError"
-          ? "Connection timed out (5s)"
-          : err.message
-        : "Unknown error"
+    let message = "Unknown error"
+    if (err instanceof Error) {
+      if (err.name === "AbortError") {
+        message = "Connection timed out (30s)"
+      } else {
+        // Node undici wraps the real error in .cause
+        const cause = (err as Error & { cause?: Error }).cause
+        message = cause?.message ?? err.message
+        // "fetch failed" alone is useless — surface the underlying reason
+        if (err.message === "fetch failed" && cause) {
+          const code = (cause as NodeJS.ErrnoException).code
+          if (code === "ENOTFOUND") {
+            message = `DNS lookup failed for host`
+          } else if (code === "ECONNREFUSED") {
+            message = `Connection refused by bridge`
+          } else if (code === "ERR_SSL_WRONG_VERSION_NUMBER" || cause.message?.includes("SSL")) {
+            message = `TLS/SSL error — is the bridge URL using the correct protocol?`
+          } else if (code) {
+            message = `${cause.message} (${code})`
+          }
+        }
+      }
+    }
     return NextResponse.json({ ok: false, error: message })
   }
 }
