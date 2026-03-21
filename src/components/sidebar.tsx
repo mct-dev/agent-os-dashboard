@@ -49,8 +49,8 @@ export function Sidebar({ activePage, onNavigate }: SidebarProps) {
                 className={cn(
                   "flex items-center gap-2.5 text-[13px]",
                   activePage === item.id
-                    ? "active"
-                    : "text-base-content/50 hover:text-base-content/80"
+                    ? "menu-active"
+                    : "text-base-content/60"
                 )}
               >
                 <span className="text-sm w-5 text-center shrink-0">{item.icon}</span>
@@ -75,8 +75,8 @@ export function Sidebar({ activePage, onNavigate }: SidebarProps) {
               className={cn(
                 "flex items-center gap-2.5 text-[13px]",
                 activePage === "settings"
-                  ? "active"
-                  : "text-base-content/50 hover:text-base-content/80"
+                  ? "menu-active"
+                  : "text-base-content/60"
               )}
             >
               <span className="text-sm w-5 text-center">⚙️</span>
