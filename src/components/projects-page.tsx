@@ -87,7 +87,7 @@ export function ProjectsPage() {
   const deleteTaskCount = deleteId ? tasks.filter((t) => t.projectId === deleteId).length : 0
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen min-w-0">
       <header className="shrink-0 border-b border-base-300 px-6 py-3 flex items-center justify-between">
         <h1 className="text-sm font-semibold text-base-content">Projects</h1>
         <Button size="sm" onClick={openNew}>

@@ -100,7 +100,7 @@ export default function Dashboard() {
     >
       <div className="flex min-h-screen">
         <Sidebar activePage={activePage} onNavigate={setActivePage} />
-        <main className="flex-1 ml-[220px]">
+        <main className="flex-1 ml-[220px] min-w-0 overflow-hidden">
           {renderPage()}
         </main>
       </div>

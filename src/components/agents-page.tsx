@@ -211,7 +211,7 @@ export function AgentsPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen min-w-0">
       <header className="shrink-0 border-b border-base-300 px-6 py-3 flex items-center justify-between">
         <h1 className="text-sm font-semibold text-base-content">Agents</h1>
         <Button size="sm" onClick={openNew}>

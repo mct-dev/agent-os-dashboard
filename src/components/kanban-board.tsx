@@ -85,11 +85,13 @@ function DroppableColumn({
   tasks,
   isOver,
   onDelete,
+  onAddTask,
 }: {
   status: Status
   tasks: Task[]
   isOver: boolean
   onDelete: (id: string) => void
+  onAddTask: (status: Status) => void
 }) {
   const { setNodeRef } = useDroppable({ id: status })
   const config = STATUS_CONFIG[status]
@@ -116,7 +118,7 @@ function DroppableColumn({
       {/* Cards */}
       <ScrollArea className="flex-1">
         <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
-          <div className="space-y-2 pb-4 min-h-[40px]">
+          <div className="space-y-2 pb-2 min-h-[40px]">
             {tasks.map((task) => (
               <SortableTaskCard
                 key={task.id}
@@ -127,6 +129,14 @@ function DroppableColumn({
           </div>
         </SortableContext>
       </ScrollArea>
+
+      {/* Add task button */}
+      <button
+        onClick={() => onAddTask(status)}
+        className="w-full text-left px-2 py-1.5 text-xs text-base-content/30 hover:text-base-content/60 hover:bg-base-200/50 rounded transition-colors"
+      >
+        + Add
+      </button>
     </div>
   )
 }
@@ -212,6 +222,13 @@ export function KanbanBoard() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [activeTask, setActiveTask] = useState<Task | null>(null)
   const [overColumn, setOverColumn] = useState<string | null>(null)
+  const [newTaskOpen, setNewTaskOpen] = useState(false)
+  const [newTaskStatus, setNewTaskStatus] = useState<Status>("BACKLOG")
+
+  const handleAddTask = (status: Status) => {
+    setNewTaskStatus(status)
+    setNewTaskOpen(true)
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -308,11 +325,11 @@ export function KanbanBoard() {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen min-w-0">
       {/* Header */}
-      <header className="shrink-0 border-b border-base-300 px-6 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h1 className="text-sm font-semibold text-base-content">Board</h1>
+      <header className="shrink-0 border-b border-base-300 px-6 py-3 flex items-center justify-between gap-2 min-w-0">
+        <div className="flex items-center gap-4 min-w-0">
+          <h1 className="text-sm font-semibold text-base-content shrink-0">Board</h1>
           <Select value={projectFilter} onValueChange={setProjectFilter}>
             <SelectTrigger className="h-7 text-xs w-36 bg-transparent border-input">
               <SelectValue placeholder="All Projects" />
@@ -328,7 +345,6 @@ export function KanbanBoard() {
           </Select>
           <BridgeStatusDot />
         </div>
-        <NewTaskDialog />
       </header>
 
       {/* Kanban Columns */}
@@ -352,6 +368,7 @@ export function KanbanBoard() {
                   tasks={columnTasks}
                   isOver={overColumn === status}
                   onDelete={setDeleteId}
+                  onAddTask={handleAddTask}
                 />
               )
             })}
@@ -366,6 +383,13 @@ export function KanbanBoard() {
           </DragOverlay>
         </DndContext>
       </div>
+
+      {/* New Task Dialog */}
+      <NewTaskDialog
+        defaultStatus={newTaskStatus}
+        open={newTaskOpen}
+        onOpenChange={setNewTaskOpen}
+      />
 
       {/* Task Detail Panel */}
       <TaskPanel />

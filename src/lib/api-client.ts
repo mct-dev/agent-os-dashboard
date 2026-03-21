@@ -14,6 +14,7 @@ export async function createTask(data: {
   description?: string
   projectId: string
   priority: string
+  status?: string
   sopId?: string
 }): Promise<Task> {
   const res = await fetch("/api/tasks", {

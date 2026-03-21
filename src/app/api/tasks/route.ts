@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
       title: body.title,
       description: body.description,
       projectId: body.projectId ?? null,
+      status: body.status ?? "BACKLOG",
       priority: body.priority ?? "MEDIUM",
       sopId: body.sopId,
     },

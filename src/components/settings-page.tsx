@@ -156,7 +156,7 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen min-w-0">
       <header className="shrink-0 border-b border-base-300 px-6 py-3">
         <h1 className="text-sm font-semibold text-base-content">Settings</h1>
       </header>

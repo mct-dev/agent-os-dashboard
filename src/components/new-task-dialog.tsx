@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -9,7 +9,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog"
 import {
@@ -22,16 +21,28 @@ import {
 import { useAppState } from "@/lib/store"
 import { createTask } from "@/lib/api-client"
 import { toast } from "sonner"
-import type { Priority } from "@/lib/types"
+import type { Priority, Status } from "@/lib/types"
 
-export function NewTaskDialog() {
+interface NewTaskDialogProps {
+  defaultStatus?: Status
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+export function NewTaskDialog({ defaultStatus, open, onOpenChange }: NewTaskDialogProps) {
   const { projects, sops, refreshTasks } = useAppState()
-  const [open, setOpen] = useState(false)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [projectId, setProjectId] = useState(projects[0]?.id ?? "")
   const [priority, setPriority] = useState<Priority>("MEDIUM")
   const [sopId, setSopId] = useState<string>("none")
+  const [status, setStatus] = useState<Status>(defaultStatus ?? "BACKLOG")
+
+  useEffect(() => {
+    if (open && defaultStatus) {
+      setStatus(defaultStatus)
+    }
+  }, [open, defaultStatus])
 
   const handleCreate = async () => {
     if (!title.trim()) return
@@ -41,6 +52,7 @@ export function NewTaskDialog() {
         description: description.trim() || undefined,
         projectId,
         priority,
+        status,
         sopId: sopId === "none" ? undefined : sopId,
       })
       await refreshTasks()
@@ -48,19 +60,14 @@ export function NewTaskDialog() {
       setDescription("")
       setPriority("MEDIUM")
       setSopId("none")
-      setOpen(false)
+      onOpenChange(false)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to create task")
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm">
-          + New Issue
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>New Issue</DialogTitle>
@@ -105,10 +112,10 @@ export function NewTaskDialog() {
                 <SelectValue placeholder="Priority" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="URGENT">⬆ Urgent</SelectItem>
-                <SelectItem value="HIGH">↑ High</SelectItem>
-                <SelectItem value="MEDIUM">→ Medium</SelectItem>
-                <SelectItem value="LOW">↓ Low</SelectItem>
+                <SelectItem value="URGENT">Urgent</SelectItem>
+                <SelectItem value="HIGH">High</SelectItem>
+                <SelectItem value="MEDIUM">Medium</SelectItem>
+                <SelectItem value="LOW">Low</SelectItem>
               </SelectContent>
             </Select>
 
@@ -138,7 +145,7 @@ export function NewTaskDialog() {
                       {stage.name}
                     </span>
                     {i < (sops.find((s) => s.id === sopId)?.stages.length ?? 0) - 1 && (
-                      <span className="text-base-content/60 text-[10px]">→</span>
+                      <span className="text-base-content/60 text-[10px]">&rarr;</span>
                     )}
                   </span>
                 ))}
