@@ -1,21 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
-import { serializeTask } from "@/lib/api-helpers"
-
-async function authenticate(req: NextRequest): Promise<boolean> {
-  // Check API key first (external clients like Telegram)
-  const apiKey = req.headers.get("x-api-key")
-  if (apiKey && apiKey === process.env.ICARUS_API_KEY) {
-    return true
-  }
-  // Fall back to NextAuth session (dashboard)
-  const session = await auth()
-  if (session?.user?.email) {
-    return true
-  }
-  return false
-}
+import { authenticate, serializeTask } from "@/lib/api-helpers"
 
 export async function GET(req: NextRequest) {
   if (!(await authenticate(req))) {

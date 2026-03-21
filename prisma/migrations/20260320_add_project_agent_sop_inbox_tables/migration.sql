@@ -1,7 +1,17 @@
 -- Migration: Add Project, Sop, SopStage, AgentConfig, InboxItem tables
 -- Also migrates Task.project enum to Task.projectId FK
 
--- 1. Create Project table
+-- 1. Add projectId column to Task (nullable initially)
+ALTER TABLE "Task" ADD COLUMN "projectId" TEXT;
+
+-- 2. Backfill projectId from the enum column
+UPDATE "Task" SET "projectId" = LOWER("project"::TEXT);
+
+-- 3. Drop the old enum column and type (must drop before creating table with same name)
+ALTER TABLE "Task" DROP COLUMN "project";
+DROP TYPE IF EXISTS "Project";
+
+-- 4. Create Project table
 CREATE TABLE "Project" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -13,22 +23,12 @@ CREATE TABLE "Project" (
     CONSTRAINT "Project_pkey" PRIMARY KEY ("id")
 );
 
--- 2. Seed default projects (IDs match lowercase enum values for backfill)
+-- 5. Seed default projects (IDs match lowercase enum values for backfill)
 INSERT INTO "Project" ("id", "name", "color", "emoji", "sortOrder", "createdAt", "updatedAt") VALUES
     ('laurel',   'Laurel',         '#3b82f6', '🔵', 0, NOW(), NOW()),
     ('personal', 'Personal',       '#22c55e', '🟢', 1, NOW(), NOW()),
     ('side',     'Side Projects',  '#eab308', '🟡', 2, NOW(), NOW()),
     ('life',     'Life',           '#94a3b8', '⚪', 3, NOW(), NOW());
-
--- 3. Add projectId column to Task (nullable initially)
-ALTER TABLE "Task" ADD COLUMN "projectId" TEXT;
-
--- 4. Backfill projectId from the enum column
-UPDATE "Task" SET "projectId" = LOWER("project"::TEXT);
-
--- 5. Drop the old enum column and type
-ALTER TABLE "Task" DROP COLUMN "project";
-DROP TYPE IF EXISTS "Project";
 
 -- 6. Add FK constraint and index
 ALTER TABLE "Task" ADD CONSTRAINT "Task_projectId_fkey"

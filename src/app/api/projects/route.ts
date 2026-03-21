@@ -1,18 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
+import { authenticate } from "@/lib/api-helpers"
 
-async function requireSession() {
-  const session = await auth()
-  if (!session?.user?.email) {
-    return null
-  }
-  return session
-}
-
-export async function GET() {
-  const session = await requireSession()
-  if (!session) {
+export async function GET(req: NextRequest) {
+  if (!(await authenticate(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
@@ -24,8 +15,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await requireSession()
-  if (!session) {
+  if (!(await authenticate(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 

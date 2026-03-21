@@ -1,21 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
-
-async function requireSession() {
-  const session = await auth()
-  if (!session?.user?.email) {
-    return null
-  }
-  return session
-}
+import { authenticate } from "@/lib/api-helpers"
 
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await requireSession()
-  if (!session) {
+  if (!(await authenticate(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
@@ -37,11 +28,10 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await requireSession()
-  if (!session) {
+  if (!(await authenticate(req))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
