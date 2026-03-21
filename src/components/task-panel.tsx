@@ -147,6 +147,9 @@ export function TaskPanel() {
         endedAt: null,
         bridgeRunId: result.bridgeRunId,
         prompt: runPrompt.trim(),
+        output: null,
+        triggerCommentId: null,
+        agentConfigId: null,
       }
       setTasks((prev) =>
         prev.map((t) =>

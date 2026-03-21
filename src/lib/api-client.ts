@@ -1,4 +1,4 @@
-import type { Task, Project, AgentConfig, InboxItem } from "./types"
+import type { Task, Project, AgentConfig, InboxItem, Comment } from "./types"
 import type { SOP } from "./sops"
 
 // ── Task CRUD ──────────────────────────────────────────────────────
@@ -235,4 +235,53 @@ export async function updateInboxItem(
 export async function deleteInboxItem(id: string): Promise<void> {
   const res = await fetch(`/api/inbox/${id}`, { method: "DELETE" })
   if (!res.ok) throw new Error("Failed to delete inbox item")
+}
+
+// ── Comments ──────────────────────────────────────────────────────
+
+export async function fetchComments(params: {
+  taskId?: string
+  projectId?: string
+  agentRunId?: string
+}): Promise<Comment[]> {
+  const query = new URLSearchParams()
+  if (params.taskId) query.set("taskId", params.taskId)
+  if (params.projectId) query.set("projectId", params.projectId)
+  if (params.agentRunId) query.set("agentRunId", params.agentRunId)
+  const res = await fetch(`/api/comments?${query}`)
+  if (!res.ok) throw new Error("Failed to fetch comments")
+  return res.json()
+}
+
+export async function createComment(data: {
+  body: string
+  taskId?: string
+  projectId?: string
+  agentRunId?: string
+}): Promise<Comment> {
+  const res = await fetch("/api/comments", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) throw new Error("Failed to create comment")
+  return res.json()
+}
+
+export async function updateComment(
+  id: string,
+  data: { body: string }
+): Promise<Comment> {
+  const res = await fetch(`/api/comments/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) throw new Error("Failed to update comment")
+  return res.json()
+}
+
+export async function deleteComment(id: string): Promise<void> {
+  const res = await fetch(`/api/comments/${id}`, { method: "DELETE" })
+  if (!res.ok) throw new Error("Failed to delete comment")
 }

@@ -1,4 +1,4 @@
-import type { Task as PrismaTask, AgentRun as PrismaRun } from "@prisma/client"
+import type { Task as PrismaTask, AgentRun as PrismaRun, Comment as PrismaComment } from "@prisma/client"
 import { NextRequest } from "next/server"
 import { auth } from "@/lib/auth"
 
@@ -31,5 +31,16 @@ export function serializeTask(task: TaskWithRuns) {
     })),
     createdAt: task.createdAt.toISOString(),
     updatedAt: task.updatedAt.toISOString(),
+  }
+}
+
+type CommentWithRuns = PrismaComment & { triggeredRuns?: { id: string; status: string }[] }
+
+export function serializeComment(comment: CommentWithRuns) {
+  return {
+    ...comment,
+    triggeredRuns: comment.triggeredRuns ?? [],
+    createdAt: comment.createdAt.toISOString(),
+    updatedAt: comment.updatedAt.toISOString(),
   }
 }
