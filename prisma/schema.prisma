@@ -17,6 +17,7 @@ model Project {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   tasks     Task[]
+  comments  Comment[]
 }
 
 model Task {
@@ -32,22 +33,27 @@ model Task {
   updatedAt   DateTime    @updatedAt
   runs        AgentRun[]
   inboxItems  InboxItem[]
+  comments    Comment[]
 }
 
 model AgentRun {
-  id           String      @id @default(cuid())
-  taskId       String
-  task         Task        @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  bridgeRunId  String?
-  status       RunStatus   @default(PENDING)
-  model        String      @default("anthropic/claude-opus-4-6")
-  prompt       String?
-  costUsd      Float?
-  tokenCount   Int?
-  output       String?
-  startedAt    DateTime    @default(now())
-  endedAt      DateTime?
-  inboxItems   InboxItem[]
+  id               String      @id @default(cuid())
+  taskId           String?
+  task             Task?       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  bridgeRunId      String?
+  status           RunStatus   @default(PENDING)
+  model            String      @default("anthropic/claude-opus-4-6")
+  prompt           String?
+  costUsd          Float?
+  tokenCount       Int?
+  output           String?
+  startedAt        DateTime    @default(now())
+  endedAt          DateTime?
+  triggerCommentId String?
+  triggerComment   Comment?    @relation("TriggeredByComment", fields: [triggerCommentId], references: [id], onDelete: SetNull)
+  agentConfigId    String?
+  inboxItems       InboxItem[]
+  comments         Comment[]   @relation("RunComments")
 }
 
 model Sop {
@@ -74,7 +80,7 @@ model SopStage {
 
 model AgentConfig {
   id           String   @id @default(cuid())
-  name         String
+  name         String   @unique
   tool         String   @default("claude-code")
   model        String   @default("claude-sonnet-4-6")
   description  String   @default("")
@@ -116,6 +122,30 @@ model UserSettings {
   onboardingComplete Boolean  @default(false)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+}
+
+model Comment {
+  id          String    @id @default(cuid())
+  body        String
+
+  taskId      String?
+  task        Task?     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  projectId   String?
+  project     Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  agentRunId  String?
+  agentRun    AgentRun? @relation("RunComments", fields: [agentRunId], references: [id], onDelete: Cascade)
+
+  userId      String?
+  agentId     String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  triggeredRuns AgentRun[] @relation("TriggeredByComment")
+
+  @@index([taskId])
+  @@index([projectId])
+  @@index([agentRunId])
 }
 
 enum Status {
