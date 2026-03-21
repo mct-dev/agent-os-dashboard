@@ -68,7 +68,7 @@ export function NewTaskDialog({ defaultStatus, open, onOpenChange }: NewTaskDial
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>New Issue</DialogTitle>
         </DialogHeader>
