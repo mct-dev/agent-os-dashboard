@@ -24,6 +24,7 @@ export async function PUT(
 
   const data: Record<string, unknown> = {}
   if (body.name !== undefined) data.name = body.name
+  if (body.tool !== undefined) data.tool = body.tool
   if (body.model !== undefined) data.model = body.model
   if (body.description !== undefined) data.description = body.description
   if (body.systemPrompt !== undefined) data.systemPrompt = body.systemPrompt

@@ -55,6 +55,7 @@ export interface InboxItem {
 export interface AgentConfig {
   id: string
   name: string
+  tool: string
   model: string
   description: string
   systemPrompt: string

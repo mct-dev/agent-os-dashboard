@@ -122,6 +122,7 @@ export async function fetchAgents(): Promise<AgentConfig[]> {
 
 export async function createAgent(data: {
   name: string
+  tool?: string
   model?: string
   description?: string
   systemPrompt?: string
@@ -140,6 +141,7 @@ export async function updateAgent(
   id: string,
   data: Partial<{
     name: string
+    tool: string
     model: string
     description: string
     systemPrompt: string

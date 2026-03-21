@@ -15,9 +15,7 @@ import {
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
@@ -32,7 +30,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useAppState } from "@/lib/store"
-import { LLM_MODELS } from "@/lib/types"
 import type { AgentConfig } from "@/lib/types"
 import {
   createAgent as apiCreateAgent,
@@ -41,10 +38,16 @@ import {
 } from "@/lib/api-client"
 import { toast } from "sonner"
 
-interface ModelOption {
+interface ToolOption {
   id: string
   name: string
-  provider: string
+  icon: string
+  adapter: string
+}
+
+interface ToolModel {
+  id: string
+  name: string
 }
 
 interface BridgeInfo {
@@ -78,8 +81,10 @@ export function AgentsPage() {
   const [editing, setEditing] = useState<AgentConfig | null>(null)
   const [isNew, setIsNew] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [models, setModels] = useState<ModelOption[]>([])
-  const [modelsLoading, setModelsLoading] = useState(true)
+  const [tools, setTools] = useState<ToolOption[]>([])
+  const [toolsLoading, setToolsLoading] = useState(true)
+  const [toolModels, setToolModels] = useState<ToolModel[]>([])
+  const [toolModelsLoading, setToolModelsLoading] = useState(false)
   const [bridge, setBridge] = useState<BridgeInfo>({ status: "checking" })
 
   // Fetch bridge status
@@ -128,38 +133,34 @@ export function AgentsPage() {
     }
   }
 
+  // Fetch available tools from bridge
   useEffect(() => {
-    fetch("/api/models")
+    fetch("/api/tools")
       .then((res) => res.json())
-      .then((data: ModelOption[]) => setModels(data))
+      .then((data: ToolOption[]) => setTools(data))
       .catch(() => {
-        // Fallback to static list
-        setModels(
-          LLM_MODELS.map((m) => ({
-            id: m,
-            name: m,
-            provider: m.split("/")[0],
-          }))
-        )
+        setTools([{ id: "claude-code", name: "Claude Code", icon: "🟣", adapter: "claude" }])
       })
-      .finally(() => setModelsLoading(false))
+      .finally(() => setToolsLoading(false))
   }, [])
 
-  const modelsByProvider = models.reduce<Record<string, ModelOption[]>>(
-    (acc, m) => {
-      const provider = m.provider || "other"
-      if (!acc[provider]) acc[provider] = []
-      acc[provider].push(m)
-      return acc
-    },
-    {}
-  )
+  // Fetch models when the selected tool changes
+  useEffect(() => {
+    if (!editing?.tool) return
+    setToolModelsLoading(true)
+    fetch(`/api/tools/${encodeURIComponent(editing.tool)}/models`)
+      .then((res) => res.json())
+      .then((data: ToolModel[]) => setToolModels(data))
+      .catch(() => setToolModels([]))
+      .finally(() => setToolModelsLoading(false))
+  }, [editing?.tool])
 
   const openNew = () => {
     setEditing({
       id: `agent-${Date.now()}`,
       name: "",
-      model: "anthropic/claude-sonnet-4-6",
+      tool: "claude-code",
+      model: "claude-sonnet-4-6",
       description: "",
       systemPrompt: "",
       defaultSopId: null,
@@ -178,6 +179,7 @@ export function AgentsPage() {
       if (isNew) {
         await apiCreateAgent({
           name: editing.name,
+          tool: editing.tool,
           model: editing.model,
           description: editing.description,
           systemPrompt: editing.systemPrompt,
@@ -186,6 +188,7 @@ export function AgentsPage() {
       } else {
         await apiUpdateAgent(editing.id, {
           name: editing.name,
+          tool: editing.tool,
           model: editing.model,
           description: editing.description,
           systemPrompt: editing.systemPrompt,
@@ -239,7 +242,7 @@ export function AgentsPage() {
                       <span className="text-sm">🤖</span>
                       <h3 className="text-sm font-medium text-base-content">{agent.name}</h3>
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 font-mono">
-                        {agent.model}
+                        {agent.tool ?? "claude-code"}:{agent.model}
                       </Badge>
                     </div>
                     <Button
@@ -401,36 +404,62 @@ export function AgentsPage() {
                 />
               </div>
               <div>
+                <label className="text-xs text-base-content/60 block mb-1">Tool</label>
+                <Select
+                  value={editing.tool}
+                  onValueChange={(v) => {
+                    setEditing({ ...editing, tool: v, model: "" })
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={toolsLoading ? "Loading tools…" : "Select tool"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {toolsLoading ? (
+                      <SelectItem value="loading" disabled>
+                        Loading tools…
+                      </SelectItem>
+                    ) : (
+                      tools.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.icon} {t.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <label className="text-xs text-base-content/60 block mb-1">Model</label>
                 <Select
                   value={editing.model}
                   onValueChange={(v) => setEditing({ ...editing, model: v })}
+                  disabled={!editing.tool || toolModelsLoading}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={modelsLoading ? "Loading models…" : "Select model"} />
+                    <SelectValue placeholder={
+                      !editing.tool
+                        ? "Select a tool first"
+                        : toolModelsLoading
+                          ? "Loading models…"
+                          : "Select model"
+                    } />
                   </SelectTrigger>
                   <SelectContent>
-                    {modelsLoading ? (
+                    {toolModelsLoading ? (
                       <SelectItem value="loading" disabled>
                         Loading models…
                       </SelectItem>
-                    ) : models.length > 0 ? (
-                      Object.entries(modelsByProvider).map(([provider, providerModels]) => (
-                        <SelectGroup key={provider}>
-                          <SelectLabel className="capitalize">{provider}</SelectLabel>
-                          {providerModels.map((m) => (
-                            <SelectItem key={m.id} value={m.id}>
-                              {m.name}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      ))
-                    ) : (
-                      LLM_MODELS.map((m) => (
-                        <SelectItem key={m} value={m}>
-                          {m}
+                    ) : toolModels.length > 0 ? (
+                      toolModels.map((m) => (
+                        <SelectItem key={m.id} value={m.id}>
+                          {m.name}
                         </SelectItem>
                       ))
+                    ) : (
+                      <SelectItem value="none" disabled>
+                        No models available
+                      </SelectItem>
                     )}
                   </SelectContent>
                 </Select>
