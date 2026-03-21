@@ -116,12 +116,41 @@ async function main() {
     res.json({ ok: true })
   })
 
-  // GET /api/models — list available models
+  // GET /api/tools — list available tools/adapters
+  app.get("/api/tools", auth, (_req, res) => {
+    res.json([
+      { id: "claude-code", name: "Claude Code", icon: "🟣", adapter: "claude" },
+      { id: "codex", name: "Codex (OpenAI)", icon: "🟢", adapter: "codex" },
+    ])
+  })
+
+  // GET /api/tools/:id/models — list models for a specific tool
+  app.get("/api/tools/:id/models", auth, (req, res) => {
+    const toolModels: Record<string, { id: string; name: string }[]> = {
+      "claude-code": [
+        { id: "claude-opus-4-6", name: "Claude Opus 4.6" },
+        { id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6" },
+        { id: "claude-haiku-4-5", name: "Claude Haiku 4.5" },
+      ],
+      "codex": [
+        { id: "o4-mini", name: "o4-mini" },
+        { id: "codex-mini-latest", name: "Codex Mini" },
+      ],
+    }
+
+    const models = toolModels[req.params.id]
+    if (!models) return res.status(404).json({ error: "Unknown tool" })
+    res.json(models)
+  })
+
+  // GET /api/models — list available models (legacy, returns all)
   app.get("/api/models", auth, (_req, res) => {
     res.json([
-      { id: "claude-opus-4-6", name: "Claude Opus 4.6", provider: "claude-local" },
-      { id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6", provider: "claude-local" },
-      { id: "claude-haiku-4-5", name: "Claude Haiku 4.5", provider: "claude-local" },
+      { id: "claude-opus-4-6", name: "Claude Opus 4.6", provider: "claude-code" },
+      { id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6", provider: "claude-code" },
+      { id: "claude-haiku-4-5", name: "Claude Haiku 4.5", provider: "claude-code" },
+      { id: "o4-mini", name: "o4-mini", provider: "codex" },
+      { id: "codex-mini-latest", name: "Codex Mini", provider: "codex" },
     ])
   })
 

@@ -75,7 +75,8 @@ model SopStage {
 model AgentConfig {
   id           String   @id @default(cuid())
   name         String
-  model        String   @default("anthropic/claude-opus-4-6")
+  tool         String   @default("claude-code")
+  model        String   @default("claude-sonnet-4-6")
   description  String   @default("")
   systemPrompt String   @default("")
   defaultSopId String?

@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
   const agent = await prisma.agentConfig.create({
     data: {
       name: body.name,
+      ...(body.tool !== undefined && { tool: body.tool }),
       ...(body.model !== undefined && { model: body.model }),
       ...(body.description !== undefined && { description: body.description }),
       ...(body.systemPrompt !== undefined && {
