@@ -120,6 +120,7 @@ model UserSettings {
   bridgeApiKey       String?
   bridgeName         String?
   onboardingComplete Boolean  @default(false)
+  defaultPage        String   @default("/board")
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 }
