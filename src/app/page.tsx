@@ -2,7 +2,7 @@ import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
-const VALID_PAGES = ["/board", "/inbox", "/projects", "/sops", "/agents", "/settings"]
+const VALID_PAGES = ["/board", "/inbox", "/projects", "/sops", "/agents", "/schedule", "/settings"]
 
 export default async function Home() {
   const session = await auth()

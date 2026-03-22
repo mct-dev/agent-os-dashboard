@@ -29,6 +29,7 @@ const PAGE_OPTIONS = [
   { value: "/projects", label: "Projects" },
   { value: "/sops", label: "SOPs" },
   { value: "/agents", label: "Agents" },
+  { value: "/schedule", label: "Schedule" },
   { value: "/settings", label: "Settings" },
 ]
 
