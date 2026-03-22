@@ -8,6 +8,10 @@ const FALLBACK_MODELS: Record<string, { id: string; name: string }[]> = {
     { id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6" },
     { id: "claude-haiku-4-5", name: "Claude Haiku 4.5" },
   ],
+  codex: [
+    { id: "o4-mini", name: "o4-mini" },
+    { id: "codex-mini-latest", name: "Codex Mini" },
+  ],
 }
 
 export async function GET(

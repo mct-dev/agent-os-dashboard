@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 
 const FALLBACK_TOOLS = [
   { id: "claude-code", name: "Claude Code", icon: "🟣", adapter: "claude" },
+  { id: "codex", name: "Codex (OpenAI)", icon: "🟢", adapter: "codex" },
 ]
 
 export async function GET() {
