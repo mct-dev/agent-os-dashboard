@@ -25,6 +25,8 @@ export interface AppState {
   scheduledJobs: ScheduledJob[]
   setScheduledJobs: React.Dispatch<React.SetStateAction<ScheduledJob[]>>
   refreshSchedules: () => Promise<void>
+  linearConnected: boolean
+  setLinearConnected: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 export const AppContext = createContext<AppState | null>(null)

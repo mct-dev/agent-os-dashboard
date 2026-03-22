@@ -35,6 +35,7 @@ model Task {
   runs          AgentRun[]
   inboxItems    InboxItem[]
   comments      Comment[]
+  linearLinks   LinearLink[]
   scheduledJobs ScheduledJob[]
 }
 
@@ -167,10 +168,30 @@ model UserSettings {
   bridgeUrl          String?
   bridgeApiKey       String?
   bridgeName         String?
+  linearApiKey       String?
   onboardingComplete Boolean  @default(false)
   defaultPage        String   @default("/board")
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+}
+
+model LinearLink {
+  id                 String   @id @default(cuid())
+  taskId             String
+  task               Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  linearIssueId      String
+  linearIssueUrl     String
+  linearTeamKey      String
+  linearIssueNumber  Int
+  linearTitle        String
+  linearStatus       String?
+  linearPriority     Int?
+  linearAssignee     String?
+  syncedAt           DateTime @default(now())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([taskId, linearIssueId])
 }
 
 model Comment {

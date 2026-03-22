@@ -14,7 +14,7 @@ export async function GET(
 
   const task = await prisma.task.findUnique({
     where: { id },
-    include: { runs: { orderBy: { startedAt: "desc" } } },
+    include: { runs: { orderBy: { startedAt: "desc" } }, linearLinks: true },
   })
 
   if (!task) {
@@ -47,7 +47,7 @@ export async function PUT(
   const task = await prisma.task.update({
     where: { id },
     data,
-    include: { runs: { orderBy: { startedAt: "desc" } } },
+    include: { runs: { orderBy: { startedAt: "desc" } }, linearLinks: true },
   })
 
   return NextResponse.json(serializeTask(task))

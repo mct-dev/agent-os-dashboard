@@ -1,4 +1,4 @@
-import type { Task, Project, AgentConfig, InboxItem, Comment, ScheduledJob } from "./types"
+import type { Task, Project, AgentConfig, InboxItem, Comment, ScheduledJob, LinearLink, LinearSearchResult, LinearTeam } from "./types"
 import type { SOP } from "./sops"
 
 // ── Task CRUD ──────────────────────────────────────────────────────
@@ -365,4 +365,79 @@ export async function toggleSchedule(id: string): Promise<ScheduledJob> {
 export async function approveScheduledRun(inboxItemId: string): Promise<void> {
   const res = await fetch(`/api/inbox/${inboxItemId}/approve-run`, { method: "POST" })
   if (!res.ok) throw new Error("Failed to approve run")
+}
+
+// ── Linear ──────────────────────────────────────────────
+
+export async function fetchLinearStatus(): Promise<{ connected: boolean; workspace?: string; email?: string }> {
+  const res = await fetch("/api/linear/status")
+  if (!res.ok) return { connected: false }
+  return res.json()
+}
+
+export async function connectLinear(apiKey: string): Promise<{ connected: boolean; workspace?: string; email?: string }> {
+  const res = await fetch("/api/linear/connect", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ apiKey }),
+  })
+  if (!res.ok) throw new Error("Failed to connect Linear")
+  return res.json()
+}
+
+export async function fetchLinearTeams(): Promise<LinearTeam[]> {
+  const res = await fetch("/api/linear/teams")
+  if (!res.ok) throw new Error("Failed to fetch Linear teams")
+  return res.json()
+}
+
+export async function searchLinearIssues(params: {
+  q?: string
+  teamId?: string
+  status?: string
+}): Promise<LinearSearchResult[]> {
+  const query = new URLSearchParams()
+  if (params.q) query.set("q", params.q)
+  if (params.teamId) query.set("teamId", params.teamId)
+  if (params.status) query.set("status", params.status)
+  const res = await fetch(`/api/linear/search?${query}`)
+  if (!res.ok) throw new Error("Failed to search Linear issues")
+  return res.json()
+}
+
+export async function importLinearIssues(issueIds: string[], projectId?: string): Promise<Task[]> {
+  const res = await fetch("/api/linear/import", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ issueIds, projectId }),
+  })
+  if (!res.ok) throw new Error("Failed to import Linear issues")
+  return res.json()
+}
+
+export async function fetchLinearLinks(taskId: string): Promise<LinearLink[]> {
+  const res = await fetch(`/api/tasks/${taskId}/linear-links`)
+  if (!res.ok) throw new Error("Failed to fetch linear links")
+  return res.json()
+}
+
+export async function createLinearLink(taskId: string, linearIssueId: string): Promise<LinearLink> {
+  const res = await fetch(`/api/tasks/${taskId}/linear-links`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ linearIssueId }),
+  })
+  if (!res.ok) throw new Error("Failed to link Linear issue")
+  return res.json()
+}
+
+export async function deleteLinearLink(taskId: string, linkId: string): Promise<void> {
+  const res = await fetch(`/api/tasks/${taskId}/linear-links/${linkId}`, { method: "DELETE" })
+  if (!res.ok) throw new Error("Failed to unlink Linear issue")
+}
+
+export async function syncLinearLinks(taskId: string): Promise<LinearLink[]> {
+  const res = await fetch(`/api/tasks/${taskId}/linear-links/sync`, { method: "POST" })
+  if (!res.ok) throw new Error("Failed to sync Linear links")
+  return res.json()
 }

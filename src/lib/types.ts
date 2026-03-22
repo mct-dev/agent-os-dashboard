@@ -38,6 +38,7 @@ export interface Task {
   createdAt: string
   updatedAt: string
   runs: AgentRun[]
+  linearLinks?: LinearLink[]
 }
 
 export interface InboxItem {
@@ -108,6 +109,41 @@ export interface Comment {
   createdAt: string
   updatedAt: string
   triggeredRuns?: { id: string; status: RunStatus }[]
+}
+
+export interface LinearLink {
+  id: string
+  taskId: string
+  linearIssueId: string
+  linearIssueUrl: string
+  linearTeamKey: string
+  linearIssueNumber: number
+  linearTitle: string
+  linearStatus: string | null
+  linearPriority: number | null
+  linearAssignee: string | null
+  syncedAt: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface LinearSearchResult {
+  id: string
+  identifier: string
+  title: string
+  description: string | null
+  url: string
+  status: string
+  priority: number
+  assignee: string | null
+  team: { key: string }
+  number: number
+}
+
+export interface LinearTeam {
+  id: string
+  name: string
+  key: string
 }
 
 export const LLM_MODELS = [
