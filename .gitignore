@@ -49,3 +49,6 @@ bridge/.env
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+# agents
+.superpowers
