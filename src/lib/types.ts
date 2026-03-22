@@ -65,6 +65,35 @@ export interface AgentConfig {
   defaultSopId: string | null
 }
 
+export type SchedulePreset = "once" | "hourly" | "daily" | "weekly" | "monthly"
+export type TaskMode = "create" | "reuse"
+
+export interface ScheduledJob {
+  id: string
+  userId: string
+  name: string
+  agentConfigId: string | null
+  tool: string
+  model: string
+  prompt: string
+  preset: SchedulePreset
+  scheduledAt: string | null
+  hour: number | null
+  minute: number | null
+  dayOfWeek: number | null
+  dayOfMonth: number | null
+  taskMode: TaskMode
+  taskId: string | null
+  projectId: string | null
+  enabled: boolean
+  pendingApproval: boolean
+  missedRunCount: number
+  nextRunAt: string
+  lastRunAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 export interface Comment {
   id: string
   body: string
