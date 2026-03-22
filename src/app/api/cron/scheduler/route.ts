@@ -111,6 +111,8 @@ export async function POST(req: NextRequest) {
             task_description: "",
             prompt: job.prompt,
             model: job.model,
+            callback_url: `${process.env.NEXTAUTH_URL ?? ""}/api/runs/callback`,
+            callback_api_key: process.env.ICARUS_API_KEY ?? "",
           }),
           signal: runController.signal,
         })
