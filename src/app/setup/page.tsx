@@ -45,7 +45,7 @@ export default function SetupPage() {
         })
         .catch(() => {})
     }
-  }, [session, router])
+  }, [session, router, searchParams])
 
   const testConnection = async () => {
     setConnectionStatus("testing")

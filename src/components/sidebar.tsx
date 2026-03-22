@@ -50,7 +50,7 @@ export function Sidebar() {
                 className={cn(
                   "flex items-center gap-2.5 text-[13px]",
                   isActive(item.href)
-                    ? "active"
+                    ? "menu-active"
                     : "text-base-content/50 hover:text-base-content/80"
                 )}
               >
@@ -76,7 +76,7 @@ export function Sidebar() {
               className={cn(
                 "flex items-center gap-2.5 text-[13px]",
                 isActive("/settings")
-                  ? "active"
+                  ? "menu-active"
                   : "text-base-content/50 hover:text-base-content/80"
               )}
             >
