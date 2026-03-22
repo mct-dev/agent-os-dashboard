@@ -52,6 +52,9 @@ export function SettingsPage() {
   const [settings, setSettings] = useState<UserSettings>({})
   const [bridgeStatus, setBridgeStatus] = useState<BridgeStatus>("checking")
   const [schedulerEnabled, setSchedulerEnabled] = useState<boolean | null>(null)
+  const [bridgeLogsOpen, setBridgeLogsOpen] = useState(false)
+  const [bridgeLogs, setBridgeLogs] = useState<{ ts: number; level: string; message: string }[] | null>(null)
+  const [bridgeLogsLoading, setBridgeLogsLoading] = useState(false)
   const [showApiKey, setShowApiKey] = useState(false)
   const [editing, setEditing] = useState(false)
   const [editUrl, setEditUrl] = useState("")
@@ -342,14 +345,53 @@ export function SettingsPage() {
 
           <Separator className="my-2" />
 
-          <div className="bg-base-200/30 border border-dashed border-base-300 rounded-lg p-4 text-center">
-            <Button variant="ghost" size="sm" disabled>
-              + Add Bridge
+          <div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                setBridgeLogs(null)
+                setBridgeLogsLoading(true)
+                setBridgeLogsOpen(true)
+                try {
+                  const res = await fetch("/api/bridge-logs")
+                  if (res.ok) {
+                    setBridgeLogs(await res.json())
+                  } else {
+                    setBridgeLogs([])
+                  }
+                } catch {
+                  setBridgeLogs([])
+                } finally {
+                  setBridgeLogsLoading(false)
+                }
+              }}
+              disabled={bridgeStatus !== "connected"}
+            >
+              View Bridge Logs
             </Button>
-            <p className="text-[10px] text-base-content/60 mt-1">
-              Multi-bridge support coming soon
-            </p>
           </div>
+
+          {bridgeLogsOpen && (
+            <div className="border border-base-300 rounded-lg overflow-hidden">
+              <div className="flex items-center justify-between px-3 py-2 bg-base-300/30">
+                <span className="text-xs font-medium">Bridge Logs (last 200)</span>
+                <button className="text-xs text-base-content/50 hover:text-base-content" onClick={() => setBridgeLogsOpen(false)}>Close</button>
+              </div>
+              <div className="max-h-64 overflow-y-auto bg-base-300/10 p-2 font-mono text-[10px] leading-relaxed">
+                {bridgeLogsLoading && <p className="text-base-content/50 p-2">Loading...</p>}
+                {!bridgeLogsLoading && bridgeLogs && bridgeLogs.length === 0 && (
+                  <p className="text-base-content/50 p-2">No logs available</p>
+                )}
+                {bridgeLogs?.map((log: { ts: number; level: string; message: string }, i: number) => (
+                  <div key={i} className={`py-0.5 ${log.level === "error" ? "text-error" : log.level === "warn" ? "text-warning" : "text-base-content/70"}`}>
+                    <span className="text-base-content/30">{new Date(log.ts).toLocaleTimeString()}</span>{" "}
+                    {log.message}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
 
         <Separator />

@@ -14,6 +14,21 @@ const DASHBOARD_URL = process.env.DASHBOARD_URL ?? ""
 const CRON_SECRET = process.env.CRON_SECRET ?? ""
 const SCHEDULER_INTERVAL_MS = 60_000 // 1 minute
 
+// In-memory ring buffer for service logs
+const LOG_BUFFER_SIZE = 500
+const serviceLogs: { ts: number; level: string; message: string }[] = []
+const origLog = console.log
+const origError = console.error
+const origWarn = console.warn
+function pushLog(level: string, args: unknown[]) {
+  const message = args.map(a => typeof a === "string" ? a : JSON.stringify(a)).join(" ")
+  serviceLogs.push({ ts: Date.now(), level, message })
+  if (serviceLogs.length > LOG_BUFFER_SIZE) serviceLogs.splice(0, serviceLogs.length - LOG_BUFFER_SIZE)
+}
+console.log = (...args: unknown[]) => { pushLog("info", args); origLog(...args) }
+console.error = (...args: unknown[]) => { pushLog("error", args); origError(...args) }
+console.warn = (...args: unknown[]) => { pushLog("warn", args); origWarn(...args) }
+
 async function main() {
   const db = await initDb()
 
@@ -165,6 +180,12 @@ async function main() {
   app.get("/api/health", (_req, res) =>
     res.json({ ok: true, version: "1.0.0", schedulerEnabled: !!(DASHBOARD_URL && CRON_SECRET) })
   )
+
+  // GET /api/logs — recent service logs (last N, default 200)
+  app.get("/api/logs", auth, (req, res) => {
+    const limit = Math.min(parseInt(req.query.limit as string) || 200, LOG_BUFFER_SIZE)
+    res.json(serviceLogs.slice(-limit))
+  })
 
   // On startup: reap orphaned runs
   db.prepare(
