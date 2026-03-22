@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -77,10 +78,12 @@ const RUNTIMES = [
 ]
 
 export function AgentsPage() {
-  const { agents, sops, refreshAgents } = useAppState()
+  const { agents, sops, scheduledJobs, refreshAgents } = useAppState()
+  const router = useRouter()
   const [editing, setEditing] = useState<AgentConfig | null>(null)
   const [isNew, setIsNew] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [blockedDeleteAgent, setBlockedDeleteAgent] = useState<AgentConfig | null>(null)
   const [tools, setTools] = useState<ToolOption[]>([])
   const [toolsLoading, setToolsLoading] = useState(true)
   const [toolModels, setToolModels] = useState<ToolModel[]>([])
@@ -249,7 +252,15 @@ export function AgentsPage() {
                       variant="ghost"
                       size="sm"
                       className="h-6 text-[11px] text-error/60 hover:text-error"
-                      onClick={(e) => { e.stopPropagation(); setDeleteId(agent.id) }}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        const associatedJobs = scheduledJobs.filter(j => j.agentConfigId === agent.id)
+                        if (associatedJobs.length > 0) {
+                          setBlockedDeleteAgent(agent)
+                        } else {
+                          setDeleteId(agent.id)
+                        }
+                      }}
                     >
                       Delete
                     </Button>
@@ -516,6 +527,34 @@ export function AgentsPage() {
               className="bg-error text-error-content hover:bg-error/90"
             >
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Blocked Delete — agent has associated scheduled jobs */}
+      <AlertDialog open={!!blockedDeleteAgent} onOpenChange={(open) => { if (!open) setBlockedDeleteAgent(null) }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Agent used by scheduled jobs</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div>
+                <p className="mb-2">The following scheduled jobs reference this agent:</p>
+                <ul className="list-disc pl-5 space-y-1 mb-3">
+                  {blockedDeleteAgent && scheduledJobs
+                    .filter(j => j.agentConfigId === blockedDeleteAgent.id)
+                    .map(j => (
+                      <li key={j.id} className="text-sm">{j.name}</li>
+                    ))}
+                </ul>
+                <p>Reassign these jobs to another agent or delete them before removing this agent.</p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => router.push("/schedule")}>
+              Go to Schedule
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
