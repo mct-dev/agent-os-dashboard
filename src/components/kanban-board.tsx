@@ -44,6 +44,8 @@ import { toast } from "sonner"
 import { TaskCard } from "@/components/task-card"
 import { TaskPanel } from "@/components/task-panel"
 import { NewTaskDialog } from "@/components/new-task-dialog"
+import { LinearImportModal } from "@/components/linear-import-modal"
+import { LinearIcon } from "@/components/linear-icon"
 import {
   Tooltip,
   TooltipContent,
@@ -217,13 +219,14 @@ function BridgeStatusDot() {
 }
 
 export function KanbanBoard() {
-  const { tasks, setTasks, projects } = useAppState()
+  const { tasks, setTasks, projects, linearConnected } = useAppState()
   const [projectFilter, setProjectFilter] = useState<string>("all")
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [activeTask, setActiveTask] = useState<Task | null>(null)
   const [overColumn, setOverColumn] = useState<string | null>(null)
   const [newTaskOpen, setNewTaskOpen] = useState(false)
   const [newTaskStatus, setNewTaskStatus] = useState<Status>("BACKLOG")
+  const [importModalOpen, setImportModalOpen] = useState(false)
 
   const handleAddTask = (status: Status) => {
     setNewTaskStatus(status)
@@ -345,6 +348,16 @@ export function KanbanBoard() {
           </Select>
           <BridgeStatusDot />
         </div>
+        {linearConnected && (
+          <button
+            className="btn btn-sm gap-1.5 ml-auto"
+            style={{ backgroundColor: "#5E6AD2", color: "white", borderColor: "#5E6AD2" }}
+            onClick={() => setImportModalOpen(true)}
+          >
+            <LinearIcon size={14} />
+            Import from Linear
+          </button>
+        )}
       </header>
 
       {/* Kanban Columns */}
@@ -420,6 +433,8 @@ export function KanbanBoard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <LinearImportModal open={importModalOpen} onOpenChange={setImportModalOpen} />
     </div>
   )
 }
