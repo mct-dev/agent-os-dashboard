@@ -23,11 +23,21 @@ const DAISY_THEMES = [
   "dim", "nord", "sunset", "caramellatte", "abyss", "silk",
 ]
 
+const PAGE_OPTIONS = [
+  { value: "/board", label: "Board" },
+  { value: "/inbox", label: "Inbox" },
+  { value: "/projects", label: "Projects" },
+  { value: "/sops", label: "SOPs" },
+  { value: "/agents", label: "Agents" },
+  { value: "/settings", label: "Settings" },
+]
+
 interface UserSettings {
   bridgeUrl?: string | null
   bridgeApiKey?: string | null
   bridgeName?: string | null
   onboardingComplete?: boolean
+  defaultPage?: string | null
   userId?: string
 }
 
@@ -277,6 +287,31 @@ export function SettingsPage() {
             >
               {DAISY_THEMES.map((theme) => (
                 <option key={theme} value={theme}>{theme}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-4">
+            <label className="text-sm shrink-0">Default page</label>
+            <select
+              className="select select-bordered select-sm w-full max-w-xs"
+              value={settings.defaultPage || "/board"}
+              onChange={async (e) => {
+                const defaultPage = e.target.value
+                const prev = settings.defaultPage
+                setSettings((s) => ({ ...s, defaultPage }))
+                try {
+                  await fetch("/api/user-settings", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ defaultPage }),
+                  })
+                } catch {
+                  setSettings((s) => ({ ...s, defaultPage: prev }))
+                }
+              }}
+            >
+              {PAGE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
           </div>
