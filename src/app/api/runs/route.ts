@@ -21,6 +21,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Task not found" }, { status: 404 })
   }
 
+  // Inject Linear ticket context into prompt
+  let enrichedPrompt = prompt
+  try {
+    const linearLinks = await prisma.linearLink.findMany({
+      where: { taskId },
+    })
+    if (linearLinks.length > 0) {
+      const ticketLines = linearLinks
+        .map(
+          (link) =>
+            `- ${link.linearTeamKey}-${link.linearIssueNumber}: "${link.linearTitle}" (${link.linearStatus ?? "Unknown"}) — ${link.linearIssueUrl}`
+        )
+        .join("\n")
+      enrichedPrompt = `${prompt}\n\n---\nLINKED LINEAR TICKETS:\n${ticketLines}\n\nThese Linear tickets are linked to this task. Refer to them for additional context.\nIf you have access to Linear via MCP, you can query them for real-time details.\n---`
+    }
+  } catch (e) {
+    console.warn("Failed to fetch linear links for context injection:", e)
+  }
+
   // Get user's bridge settings
   const settings = await prisma.userSettings.findUnique({
     where: { userId: session.user.email },
@@ -51,7 +70,7 @@ export async function POST(req: NextRequest) {
         task_title: task.title,
         task_description: task.description ?? "",
         sop_id: task.sopId ?? "",
-        prompt,
+        prompt: enrichedPrompt,
         model,
       }),
       signal: controller.signal,
