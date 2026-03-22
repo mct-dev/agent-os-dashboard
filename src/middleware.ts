@@ -26,6 +26,10 @@ export default auth((request) => {
     const onboarded = request.cookies.get("onboarding-complete")?.value
     if (onboarded !== "true") {
       const setupUrl = new URL("/setup", request.url)
+      // Preserve intended destination so user lands there after onboarding
+      if (pathname !== "/") {
+        setupUrl.searchParams.set("callbackUrl", pathname)
+      }
       return NextResponse.redirect(setupUrl)
     }
   }
