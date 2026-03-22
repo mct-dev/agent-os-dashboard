@@ -12,6 +12,7 @@ const navItems = [
   { id: "projects", label: "Projects", icon: "🗂", href: "/projects" },
   { id: "sops", label: "SOPs", icon: "📄", href: "/sops" },
   { id: "agents", label: "Agents", icon: "🤖", href: "/agents" },
+  { id: "schedule", label: "Schedule", icon: "📅", href: "/schedule" },
 ]
 
 export function Sidebar() {

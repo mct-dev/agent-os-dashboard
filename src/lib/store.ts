@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext } from "react"
-import type { Task, Project, InboxItem, AgentConfig } from "./types"
+import type { Task, Project, InboxItem, AgentConfig, ScheduledJob } from "./types"
 import type { SOP } from "./sops"
 
 export interface AppState {
@@ -22,6 +22,9 @@ export interface AppState {
   refreshAgents: () => Promise<void>
   refreshSops: () => Promise<void>
   refreshInbox: () => Promise<void>
+  scheduledJobs: ScheduledJob[]
+  setScheduledJobs: React.Dispatch<React.SetStateAction<ScheduledJob[]>>
+  refreshSchedules: () => Promise<void>
 }
 
 export const AppContext = createContext<AppState | null>(null)

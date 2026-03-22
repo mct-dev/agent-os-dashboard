@@ -8,9 +8,10 @@ import {
   fetchAgents,
   fetchSops,
   fetchInbox,
+  fetchSchedules,
 } from "@/lib/api-client"
 import { Sidebar } from "@/components/sidebar"
-import type { Task, Project, InboxItem, AgentConfig } from "@/lib/types"
+import type { Task, Project, InboxItem, AgentConfig, ScheduledJob } from "@/lib/types"
 import type { SOP } from "@/lib/sops"
 
 export default function DashboardLayout({
@@ -24,6 +25,7 @@ export default function DashboardLayout({
   const [agents, setAgents] = useState<AgentConfig[]>([])
   const [sops, setSops] = useState<SOP[]>([])
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+  const [scheduledJobs, setScheduledJobs] = useState<ScheduledJob[]>([])
 
   const refreshTasks = useCallback(async () => {
     setTasks(await fetchTasks())
@@ -45,16 +47,21 @@ export default function DashboardLayout({
     setInbox(await fetchInbox())
   }, [])
 
+  const refreshSchedules = useCallback(async () => {
+    setScheduledJobs(await fetchSchedules())
+  }, [])
+
   useEffect(() => {
     let cancelled = false
-    Promise.all([fetchTasks(), fetchProjects(), fetchAgents(), fetchSops(), fetchInbox()])
-      .then(([t, p, a, s, i]) => {
+    Promise.all([fetchTasks(), fetchProjects(), fetchAgents(), fetchSops(), fetchInbox(), fetchSchedules()])
+      .then(([t, p, a, s, i, sj]) => {
         if (cancelled) return
         setTasks(t)
         setProjects(p)
         setAgents(a)
         setSops(s)
         setInbox(i)
+        setScheduledJobs(sj)
       })
       .catch(() => {})
     return () => { cancelled = true }
@@ -74,6 +81,7 @@ export default function DashboardLayout({
         refreshAgents,
         refreshSops,
         refreshInbox,
+        scheduledJobs, setScheduledJobs, refreshSchedules,
       }}
     >
       <div className="flex min-h-screen">

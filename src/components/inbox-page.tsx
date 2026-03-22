@@ -9,11 +9,12 @@ import { PRIORITY_CONFIG } from "@/lib/types"
 import {
   updateInboxItem as apiUpdateInboxItem,
   deleteInboxItem as apiDeleteInboxItem,
+  approveScheduledRun,
 } from "@/lib/api-client"
 import { toast } from "sonner"
 
 export function InboxPage() {
-  const { inbox, refreshInbox } = useAppState()
+  const { inbox, refreshInbox, refreshSchedules } = useAppState()
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replyText, setReplyText] = useState("")
 
@@ -65,6 +66,17 @@ export function InboxPage() {
     }
   }
 
+  const handleApproveRun = async (id: string) => {
+    try {
+      await approveScheduledRun(id)
+      await refreshInbox()
+      await refreshSchedules()
+      toast.success("Run dispatched")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to approve run")
+    }
+  }
+
   return (
     <div className="flex flex-col h-screen min-w-0">
       <header className="shrink-0 border-b border-base-300 px-6 py-3 flex items-center justify-between">
@@ -105,6 +117,14 @@ export function InboxPage() {
                       <span className="text-xs font-medium text-base-content/80">🤖 {item.agentName}</span>
                       <span className="text-[11px] text-base-content/60">on</span>
                       <span className="text-xs text-base-content/60 truncate">{item.taskTitle}</span>
+                      {item.action === "approve_run" && (
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] px-1.5 py-0 h-5 shrink-0 border-primary/50 text-primary"
+                        >
+                          📅 Scheduled
+                        </Badge>
+                      )}
                       <Badge
                         variant={
                           item.priority === "URGENT" ? "destructive" :
@@ -151,14 +171,24 @@ export function InboxPage() {
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-6 text-[11px]"
-                          onClick={(e) => { e.stopPropagation(); setReplyingTo(item.id) }}
-                        >
-                          Reply
-                        </Button>
+                        {item.action === "approve_run" ? (
+                          <Button
+                            size="sm"
+                            className="h-6 text-[11px] btn-primary btn-sm"
+                            onClick={(e) => { e.stopPropagation(); handleApproveRun(item.id) }}
+                          >
+                            Approve &amp; Run
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-6 text-[11px]"
+                            onClick={(e) => { e.stopPropagation(); setReplyingTo(item.id) }}
+                          >
+                            Reply
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           variant="ghost"
