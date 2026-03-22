@@ -16,8 +16,9 @@ model Project {
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  tasks     Task[]
-  comments  Comment[]
+  tasks         Task[]
+  comments      Comment[]
+  scheduledJobs ScheduledJob[]
 }
 
 model Task {
@@ -31,9 +32,10 @@ model Task {
   sopId       String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
-  runs        AgentRun[]
-  inboxItems  InboxItem[]
-  comments    Comment[]
+  runs          AgentRun[]
+  inboxItems    InboxItem[]
+  comments      Comment[]
+  scheduledJobs ScheduledJob[]
 }
 
 model AgentRun {
@@ -52,6 +54,7 @@ model AgentRun {
   triggerCommentId String?
   triggerComment   Comment?    @relation("TriggeredByComment", fields: [triggerCommentId], references: [id], onDelete: SetNull)
   agentConfigId    String?
+  scheduledJobId   String?
   inboxItems       InboxItem[]
   comments         Comment[]   @relation("RunComments")
 }
@@ -87,8 +90,51 @@ model AgentConfig {
   systemPrompt String   @default("")
   defaultSopId String?
   defaultSop   Sop?     @relation(fields: [defaultSopId], references: [id], onDelete: SetNull)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  scheduledJobs ScheduledJob[]
+}
+
+model ScheduledJob {
+  id              String       @id @default(cuid())
+  userId          String
+
+  name            String
+
+  // What to run
+  agentConfigId   String?
+  agentConfig     AgentConfig? @relation(fields: [agentConfigId], references: [id], onDelete: SetNull)
+  tool            String       @default("claude-code")
+  model           String       @default("anthropic/claude-sonnet-4-6")
+  prompt          String
+
+  // Schedule
+  preset          String       // "once" | "hourly" | "daily" | "weekly" | "monthly"
+  scheduledAt     DateTime?
+  hour            Int?
+  minute          Int?
+  dayOfWeek       Int?
+  dayOfMonth      Int?
+
+  // Task behavior
+  taskMode        String       @default("create")
+  taskId          String?
+  task            Task?        @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  projectId       String?
+  project         Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  // State
+  enabled         Boolean      @default(true)
+  pendingApproval Boolean      @default(false)
+  missedRunCount  Int          @default(0)
+  nextRunAt       DateTime
+  lastRunAt       DateTime?
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([nextRunAt, enabled])
+  @@index([userId])
 }
 
 model InboxItem {
@@ -104,8 +150,10 @@ model InboxItem {
   read         Boolean   @default(false)
   snoozedUntil DateTime?
   repliedAt    DateTime?
-  replyText    String?
-  createdAt    DateTime  @default(now())
+  replyText      String?
+  scheduledJobId String?
+  action         String?
+  createdAt      DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
   @@index([taskId])
