@@ -66,7 +66,7 @@ export function RunLogModal({ runId, runMeta, onClose }: RunLogModalProps) {
 
   return (
     <Dialog open={!!runId} onOpenChange={(open) => { if (!open) onClose() }}>
-      <DialogContent className="max-w-4xl h-[80vh] flex flex-col p-0">
+      <DialogContent className="max-w-[95vw] w-[95vw] h-[90vh] flex flex-col p-0">
         <DialogHeader className="px-4 pt-4 pb-2 shrink-0">
           <DialogTitle className="flex items-center gap-3 text-sm">
             <span>Run Logs</span>
