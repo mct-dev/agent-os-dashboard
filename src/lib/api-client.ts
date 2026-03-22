@@ -1,4 +1,4 @@
-import type { Task, Project, AgentConfig, InboxItem, Comment } from "./types"
+import type { Task, Project, AgentConfig, InboxItem, Comment, ScheduledJob } from "./types"
 import type { SOP } from "./sops"
 
 // ── Task CRUD ──────────────────────────────────────────────────────
@@ -284,4 +284,85 @@ export async function updateComment(
 export async function deleteComment(id: string): Promise<void> {
   const res = await fetch(`/api/comments/${id}`, { method: "DELETE" })
   if (!res.ok) throw new Error("Failed to delete comment")
+}
+
+// ── Schedules ─────────────────────────────────────────────────────
+
+export async function fetchSchedules(): Promise<ScheduledJob[]> {
+  const res = await fetch("/api/schedules")
+  if (!res.ok) throw new Error("Failed to fetch schedules")
+  return res.json()
+}
+
+export async function createSchedule(data: {
+  name: string
+  agentConfigId?: string | null
+  tool?: string
+  model?: string
+  prompt: string
+  preset: string
+  scheduledAt?: string | null
+  hour?: number | null
+  minute?: number | null
+  dayOfWeek?: number | null
+  dayOfMonth?: number | null
+  taskMode?: string
+  taskId?: string | null
+  projectId?: string | null
+}): Promise<ScheduledJob> {
+  const res = await fetch("/api/schedules", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: "Failed to create schedule" }))
+    throw new Error(err.error ?? "Failed to create schedule")
+  }
+  return res.json()
+}
+
+export async function updateSchedule(
+  id: string,
+  data: Partial<{
+    name: string
+    agentConfigId: string | null
+    tool: string
+    model: string
+    prompt: string
+    preset: string
+    scheduledAt: string | null
+    hour: number | null
+    minute: number | null
+    dayOfWeek: number | null
+    dayOfMonth: number | null
+    taskMode: string
+    taskId: string | null
+    projectId: string | null
+    enabled: boolean
+  }>
+): Promise<ScheduledJob> {
+  const res = await fetch(`/api/schedules/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  })
+  if (!res.ok) throw new Error("Failed to update schedule")
+  return res.json()
+}
+
+export async function deleteSchedule(id: string): Promise<void> {
+  const res = await fetch(`/api/schedules/${id}`, { method: "DELETE" })
+  if (!res.ok) throw new Error("Failed to delete schedule")
+}
+
+export async function toggleSchedule(id: string): Promise<ScheduledJob> {
+  const res = await fetch(`/api/schedules/${id}/toggle`, { method: "POST" })
+  if (!res.ok) throw new Error("Failed to toggle schedule")
+  return res.json()
+}
+
+export async function approveScheduledRun(inboxItemId: string): Promise<void> {
+  const res = await fetch(`/api/inbox/${inboxItemId}/approve-run`, { method: "POST" })
+  if (!res.ok) throw new Error("Failed to approve run")
 }
