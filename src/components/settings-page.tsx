@@ -314,11 +314,28 @@ export function SettingsPage() {
             <div className="bg-warning/10 border border-warning/30 rounded-lg p-3 space-y-2">
               <p className="text-xs font-medium text-warning">Scheduler polling is disabled</p>
               <p className="text-[11px] text-base-content/60">
-                Scheduled jobs won&apos;t run until the bridge has <code className="bg-base-300 px-1 rounded text-[10px]">DASHBOARD_URL</code> and <code className="bg-base-300 px-1 rounded text-[10px]">CRON_SECRET</code> set in its <code className="bg-base-300 px-1 rounded text-[10px]">.env</code> file. Add these and restart the bridge:
+                Scheduled jobs won&apos;t run until the bridge can reach the dashboard. Set these in two places:
               </p>
-              <div className="text-[10px] font-mono bg-base-300/50 rounded p-2 space-y-0.5">
-                <p>DASHBOARD_URL=https://your-vercel-app.vercel.app</p>
-                <p>CRON_SECRET=your-secret-here</p>
+              <div className="text-[10px] space-y-2">
+                <div>
+                  <p className="text-base-content/50 mb-1">1. Generate a secret:</p>
+                  <div className="font-mono bg-base-300/50 rounded p-2">
+                    openssl rand -base64 32
+                  </div>
+                </div>
+                <div>
+                  <p className="text-base-content/50 mb-1">2. Add to your Vercel project env vars (Settings → Environment Variables):</p>
+                  <div className="font-mono bg-base-300/50 rounded p-2">
+                    CRON_SECRET=your-generated-secret
+                  </div>
+                </div>
+                <div>
+                  <p className="text-base-content/50 mb-1">3. Add to bridge <code className="bg-base-300 px-1 rounded">.env</code> file and restart:</p>
+                  <div className="font-mono bg-base-300/50 rounded p-2 space-y-0.5">
+                    <p>DASHBOARD_URL={typeof window !== "undefined" ? window.location.origin : "https://your-app.vercel.app"}</p>
+                    <p>CRON_SECRET=same-secret-as-above</p>
+                  </div>
+                </div>
               </div>
             </div>
           )}

@@ -284,10 +284,12 @@ export default function SetupPage() {
               </div>
               <div>
                 <p className="text-base-content/50">4. Enable scheduled jobs (optional)</p>
-                <p className="pl-4 text-base-content/60 mt-1"># Add to ~/agent-os/bridge/.env:</p>
+                <p className="pl-4 text-base-content/60 mt-1"># Generate a secret: openssl rand -base64 32</p>
+                <p className="pl-4 text-base-content/60 mt-1"># Add the secret to Vercel env vars as CRON_SECRET</p>
+                <p className="pl-4 text-base-content/60 mt-1"># Then add to ~/agent-os/bridge/.env:</p>
                 <p className="pl-4 text-base-content/80 mt-1">DASHBOARD_URL=https://your-vercel-app.vercel.app</p>
-                <p className="pl-4 text-base-content/80">CRON_SECRET=your-secret-here</p>
-                <p className="pl-4 text-base-content/60 mt-1"># The bridge polls the dashboard to run scheduled jobs</p>
+                <p className="pl-4 text-base-content/80">CRON_SECRET=same-secret-as-vercel</p>
+                <p className="pl-4 text-base-content/60 mt-1"># Both values must match — the bridge uses this to authenticate with the dashboard</p>
               </div>
               <div>
                 <p className="text-base-content/50">5. Start the bridge</p>
