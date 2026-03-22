@@ -10,6 +10,9 @@ import { runningProcesses } from "./process-runner.js"
 
 const API_KEY = process.env.BRIDGE_API_KEY ?? "change-me"
 const PORT = parseInt(process.env.PORT ?? "4242")
+const DASHBOARD_URL = process.env.DASHBOARD_URL ?? ""
+const CRON_SECRET = process.env.CRON_SECRET ?? ""
+const SCHEDULER_INTERVAL_MS = 60_000 // 1 minute
 
 async function main() {
   const db = await initDb()
@@ -185,6 +188,44 @@ async function main() {
       }
     } catch {
       console.log(`Tailscale URL: (could not detect — is Tailscale running?)`)
+    }
+
+    // Start scheduler polling if dashboard URL is configured
+    if (DASHBOARD_URL && CRON_SECRET) {
+      const dashboardBase = DASHBOARD_URL.replace(/\/+$/, "")
+      console.log(`Scheduler polling enabled → ${dashboardBase}/api/cron/scheduler (every 60s)`)
+
+      const tick = async () => {
+        try {
+          const controller = new AbortController()
+          const timeout = setTimeout(() => controller.abort(), 30_000)
+          const res = await fetch(`${dashboardBase}/api/cron/scheduler`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${CRON_SECRET}` },
+            signal: controller.signal,
+          })
+          clearTimeout(timeout)
+          if (res.ok) {
+            const data = await res.json() as { processed?: number }
+            if (data.processed && data.processed > 0) {
+              console.log(`Scheduler tick: ${data.processed} job(s) processed`)
+            }
+          } else {
+            console.error(`Scheduler tick failed: ${res.status}`)
+          }
+        } catch (err) {
+          // Silent on abort/network errors — bridge may be starting up
+          if (err instanceof Error && err.name !== "AbortError") {
+            console.error("Scheduler tick error:", err.message)
+          }
+        }
+      }
+
+      // Run first tick after a short delay, then every minute
+      setTimeout(tick, 5_000)
+      setInterval(tick, SCHEDULER_INTERVAL_MS)
+    } else {
+      console.log("Scheduler polling disabled (set DASHBOARD_URL and CRON_SECRET to enable)")
     }
   })
 }
