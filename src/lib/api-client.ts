@@ -367,6 +367,23 @@ export async function approveScheduledRun(inboxItemId: string): Promise<void> {
   if (!res.ok) throw new Error("Failed to approve run")
 }
 
+export interface ScheduleRun {
+  id: string
+  status: string
+  model: string
+  startedAt: string | null
+  endedAt: string | null
+  costUsd: number | null
+  tokenCount: number | null
+  task: { id: string; title: string; status: string } | null
+}
+
+export async function fetchScheduleRuns(scheduleId: string): Promise<ScheduleRun[]> {
+  const res = await fetch(`/api/schedules/${scheduleId}/runs`)
+  if (!res.ok) return []
+  return res.json()
+}
+
 // ── Linear ──────────────────────────────────────────────
 
 export async function fetchLinearStatus(): Promise<{ connected: boolean; workspace?: string; email?: string }> {

@@ -15,9 +15,22 @@ export async function GET() {
   const jobs = await prisma.scheduledJob.findMany({
     where: { userId: session.user.email },
     orderBy: { nextRunAt: "asc" },
+    include: {
+      runs: {
+        orderBy: { startedAt: "desc" },
+        take: 1,
+        select: { status: true },
+      },
+    },
   })
 
-  return NextResponse.json(jobs)
+  return NextResponse.json(
+    jobs.map((j) => ({
+      ...j,
+      lastRunStatus: j.runs[0]?.status ?? null,
+      runs: undefined,
+    }))
+  )
 }
 
 export async function POST(req: NextRequest) {

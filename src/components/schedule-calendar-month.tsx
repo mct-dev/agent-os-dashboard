@@ -163,6 +163,9 @@ export function ScheduleCalendarMonth({
                   }}
                   title={job.name}
                 >
+                  {job.lastRunStatus === "COMPLETED" && job.lastRunAt && new Date(job.lastRunAt).toDateString() === cellDate.toDateString() && (
+                    <span className="mr-0.5">&#10003;</span>
+                  )}
                   {job.name}
                 </button>
               ))}

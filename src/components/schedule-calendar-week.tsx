@@ -240,6 +240,9 @@ export function ScheduleCalendarWeek({ weekStart, jobs, onEditJob, onCreateJob }
                             onEditJob(job)
                           }}
                         >
+                          {job.lastRunStatus === "COMPLETED" && job.lastRunAt && new Date(job.lastRunAt).toDateString() === date.toDateString() && (
+                            <span className="mr-0.5">&#10003;</span>
+                          )}
                           {job.name}
                         </button>
                       )

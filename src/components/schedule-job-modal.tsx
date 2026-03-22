@@ -34,7 +34,9 @@ import {
   updateSchedule,
   deleteSchedule,
   toggleSchedule,
+  fetchScheduleRuns,
 } from "@/lib/api-client"
+import type { ScheduleRun } from "@/lib/api-client"
 import { toast } from "sonner"
 import { DAY_NAMES, PRESET_LABELS } from "@/lib/schedule-utils"
 import type { ScheduledJob, SchedulePreset } from "@/lib/types"
@@ -149,6 +151,10 @@ export function ScheduleJobModal({
   // ── Delete confirmation ──────────────────────────────────────────
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
+  // ── Run history ────────────────────────────────────────────────
+  const [scheduleRuns, setScheduleRuns] = useState<ScheduleRun[]>([])
+  const [runsLoading, setRunsLoading] = useState(false)
+
   const isEditing = !!editJob
 
   // ── Fetch tools once on mount ────────────────────────────────────
@@ -179,6 +185,19 @@ export function ScheduleJobModal({
     }
     void load()
   }, [tool])
+
+  // ── Fetch run history when editing ──────────────────────────────
+  useEffect(() => {
+    if (open && editJob) {
+      setRunsLoading(true)
+      fetchScheduleRuns(editJob.id)
+        .then(setScheduleRuns)
+        .catch(() => setScheduleRuns([]))
+        .finally(() => setRunsLoading(false))
+    } else {
+      setScheduleRuns([])
+    }
+  }, [open, editJob])
 
   // ── Populate form when modal opens ───────────────────────────────
   useEffect(() => {
@@ -695,6 +714,37 @@ export function ScheduleJobModal({
               </div>
             )}
           </div>
+
+          {isEditing && scheduleRuns.length > 0 && (
+            <div className="space-y-2 border-t border-base-300 pt-3">
+              <h3 className="text-xs font-semibold text-base-content/60 uppercase tracking-wider">
+                Run History
+              </h3>
+              <div className="max-h-40 overflow-y-auto space-y-1">
+                {runsLoading && <p className="text-xs text-base-content/50">Loading...</p>}
+                {scheduleRuns.map((run) => (
+                  <div key={run.id} className="flex items-center gap-2 text-xs py-1">
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${
+                      run.status === "COMPLETED" ? "bg-green-400" :
+                      run.status === "RUNNING" ? "bg-amber-400 animate-pulse" :
+                      run.status === "FAILED" ? "bg-red-400" : "bg-gray-400"
+                    }`} />
+                    <span className="text-base-content/50 w-28 shrink-0">
+                      {run.startedAt ? new Date(run.startedAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "—"}
+                    </span>
+                    {run.task ? (
+                      <span className="truncate text-base-content/70">{run.task.title}</span>
+                    ) : (
+                      <span className="text-base-content/40">No task</span>
+                    )}
+                    {run.costUsd != null && (
+                      <span className="ml-auto text-base-content/40 shrink-0">${run.costUsd.toFixed(2)}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <DialogFooter>
             <Button

@@ -94,6 +94,7 @@ export interface ScheduledJob {
   missedRunCount: number
   nextRunAt: string
   lastRunAt: string | null
+  lastRunStatus: string | null
   createdAt: string
   updatedAt: string
 }
