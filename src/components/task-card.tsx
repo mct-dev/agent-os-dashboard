@@ -121,6 +121,9 @@ export function TaskCard({ task, onDelete }: TaskCardProps) {
                 endedAt: null,
                 bridgeRunId: result.bridgeRunId,
                 prompt,
+                output: null,
+                triggerCommentId: null,
+                agentConfigId: null,
               }
               setTasks((prev) =>
                 prev.map((t) =>

@@ -11,6 +11,8 @@ export async function spawnClaudeRun(run: {
   prompt: string
   model?: string
   cwd?: string
+  callback_url?: string
+  callback_api_key?: string
 }) {
   const db = getDb()
 
@@ -41,6 +43,9 @@ export async function spawnClaudeRun(run: {
     run.id
   )
 
+  // Accumulate stdout output during the run for callback
+  let finalOutput = ""
+
   try {
     const result = await runChildProcess(run.id, "claude", args, {
       cwd: run.cwd ?? process.env.HOME ?? "/tmp",
@@ -52,6 +57,9 @@ export async function spawnClaudeRun(run: {
         const entry = { ts: Date.now(), stream, chunk }
         appendLog(run.id, entry)
         broadcastChunk(run.id, entry)
+
+        // Accumulate stdout for the callback
+        if (stream === "stdout") finalOutput += chunk
 
         // Extract sessionId from Claude stream-json output
         try {
@@ -82,12 +90,49 @@ export async function spawnClaudeRun(run: {
       "UPDATE runs SET status = ?, exit_code = ?, ended_at = ? WHERE id = ?"
     ).run(newStatus, result.exitCode, Date.now(), run.id)
     broadcastStatus(run.id, newStatus)
+
+    // Call completion callback if provided
+    if (run.callback_url) {
+      try {
+        await fetch(run.callback_url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bridgeRunId: run.id,
+            status: newStatus,
+            output: finalOutput || null,
+            api_key: run.callback_api_key ?? "",
+          }),
+        })
+      } catch (err) {
+        console.error(`Callback failed for run ${run.id}:`, err)
+      }
+    }
   } catch (err) {
     db.prepare("UPDATE runs SET status = 'failed', ended_at = ? WHERE id = ?").run(
       Date.now(),
       run.id
     )
     broadcastStatus(run.id, "failed")
+
+    // Call completion callback on failure too
+    if (run.callback_url) {
+      try {
+        await fetch(run.callback_url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bridgeRunId: run.id,
+            status: "failed",
+            output: finalOutput || null,
+            api_key: run.callback_api_key ?? "",
+          }),
+        })
+      } catch (callbackErr) {
+        console.error(`Callback failed for run ${run.id}:`, callbackErr)
+      }
+    }
+
     throw err
   }
 }

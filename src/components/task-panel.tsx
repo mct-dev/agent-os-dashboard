@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useAppState } from "@/lib/store"
+import { CommentThread } from "@/components/comment-thread"
 import { STATUS_CONFIG, PRIORITY_CONFIG, STATUSES, LLM_MODELS, type AgentRun } from "@/lib/types"
 import { updateTask as apiUpdateTask, startRun, stopRun } from "@/lib/api-client"
 import { toast } from "sonner"
@@ -147,6 +148,9 @@ export function TaskPanel() {
         endedAt: null,
         bridgeRunId: result.bridgeRunId,
         prompt: runPrompt.trim(),
+        output: null,
+        triggerCommentId: null,
+        agentConfigId: null,
       }
       setTasks((prev) =>
         prev.map((t) =>
@@ -422,10 +426,28 @@ export function TaskPanel() {
                             </Button>
                           </div>
                         )}
+                        {TERMINAL_STATUSES.has(run.status.toLowerCase()) && (
+                          <details className="mt-2">
+                            <summary className="text-[10px] text-base-content/40 cursor-pointer hover:text-base-content/60">
+                              Comments
+                            </summary>
+                            <div className="mt-2">
+                              <CommentThread agentRunId={run.id} />
+                            </div>
+                          </details>
+                        )}
                       </div>
                     ))}
                   </div>
                 )}
+              </div>
+
+              {/* Comments */}
+              <div className="px-4 pb-6">
+                <h3 className="text-xs font-semibold text-base-content/60 uppercase tracking-wider mb-3">
+                  Comments
+                </h3>
+                <CommentThread taskId={task.id} />
               </div>
             </div>
           </div>

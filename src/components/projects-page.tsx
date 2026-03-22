@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { CommentThread } from "@/components/comment-thread"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -41,6 +42,7 @@ export function ProjectsPage() {
   const [editing, setEditing] = useState<Project | null>(null)
   const [isNew, setIsNew] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [commentProjectId, setCommentProjectId] = useState<string | null>(null)
 
   const openNew = () => {
     setEditing({
@@ -128,6 +130,22 @@ export function ProjectsPage() {
                     Delete
                   </Button>
                 </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <button
+                    className="text-[10px] text-base-content/40 hover:text-base-content/60"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setCommentProjectId(commentProjectId === project.id ? null : project.id)
+                    }}
+                  >
+                    {commentProjectId === project.id ? "Hide comments" : "Comments"}
+                  </button>
+                </div>
+                {commentProjectId === project.id && (
+                  <div className="mt-3 pt-3 border-t border-base-300">
+                    <CommentThread projectId={project.id} />
+                  </div>
+                )}
               </div>
             )
           })}

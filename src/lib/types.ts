@@ -21,6 +21,9 @@ export interface AgentRun {
   endedAt: string | null
   bridgeRunId: string | null
   prompt: string | null
+  output: string | null
+  triggerCommentId: string | null
+  agentConfigId: string | null
 }
 
 export interface Task {
@@ -60,6 +63,19 @@ export interface AgentConfig {
   description: string
   systemPrompt: string
   defaultSopId: string | null
+}
+
+export interface Comment {
+  id: string
+  body: string
+  taskId: string | null
+  projectId: string | null
+  agentRunId: string | null
+  userId: string | null
+  agentId: string | null
+  createdAt: string
+  updatedAt: string
+  triggeredRuns?: { id: string; status: RunStatus }[]
 }
 
 export const LLM_MODELS = [
