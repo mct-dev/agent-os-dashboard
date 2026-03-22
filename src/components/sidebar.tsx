@@ -1,15 +1,21 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useAppState } from "@/lib/store"
 
-interface SidebarProps {
-  activePage: string
-  onNavigate: (page: string) => void
-}
+const navItems = [
+  { id: "inbox", label: "Inbox", icon: "🔔", href: "/inbox" },
+  { id: "board", label: "Board", icon: "📋", href: "/board" },
+  { id: "projects", label: "Projects", icon: "🗂", href: "/projects" },
+  { id: "sops", label: "SOPs", icon: "📄", href: "/sops" },
+  { id: "agents", label: "Agents", icon: "🤖", href: "/agents" },
+]
 
-export function Sidebar({ activePage, onNavigate }: SidebarProps) {
+export function Sidebar() {
+  const pathname = usePathname()
   const { inbox } = useAppState()
   const unreadCount = inbox.filter((i) => !i.read).length
   const [onboardingComplete, setOnboardingComplete] = useState(true)
@@ -23,13 +29,8 @@ export function Sidebar({ activePage, onNavigate }: SidebarProps) {
       .catch(() => {})
   }, [])
 
-  const navItems = [
-    { id: "inbox", label: "Inbox", icon: "🔔", badge: unreadCount || undefined },
-    { id: "board", label: "Board", icon: "📋" },
-    { id: "projects", label: "Projects", icon: "🗂" },
-    { id: "sops", label: "SOPs", icon: "📄" },
-    { id: "agents", label: "Agents", icon: "🤖" },
-  ]
+  const isActive = (href: string) =>
+    pathname === href || pathname.startsWith(href + "/")
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-[220px] bg-base-200 border-r border-base-300 flex flex-col z-50">
@@ -44,23 +45,23 @@ export function Sidebar({ activePage, onNavigate }: SidebarProps) {
         <ul className="menu menu-sm p-0">
           {navItems.map((item) => (
             <li key={item.id}>
-              <button
-                onClick={() => onNavigate(item.id)}
+              <Link
+                href={item.href}
                 className={cn(
                   "flex items-center gap-2.5 text-[13px]",
-                  activePage === item.id
-                    ? "menu-active"
-                    : "text-base-content/60"
+                  isActive(item.href)
+                    ? "active"
+                    : "text-base-content/50 hover:text-base-content/80"
                 )}
               >
                 <span className="text-sm w-5 text-center shrink-0">{item.icon}</span>
                 <span className="flex-1 text-left">{item.label}</span>
-                {item.badge && item.badge > 0 && (
+                {item.id === "inbox" && unreadCount > 0 && (
                   <span className="badge badge-primary badge-sm text-[10px]">
-                    {item.badge}
+                    {unreadCount}
                   </span>
                 )}
-              </button>
+              </Link>
             </li>
           ))}
         </ul>
@@ -70,13 +71,13 @@ export function Sidebar({ activePage, onNavigate }: SidebarProps) {
       <div className="px-2 pb-4">
         <ul className="menu menu-sm p-0">
           <li>
-            <button
-              onClick={() => onNavigate("settings")}
+            <Link
+              href="/settings"
               className={cn(
                 "flex items-center gap-2.5 text-[13px]",
-                activePage === "settings"
-                  ? "menu-active"
-                  : "text-base-content/60"
+                isActive("/settings")
+                  ? "active"
+                  : "text-base-content/50 hover:text-base-content/80"
               )}
             >
               <span className="text-sm w-5 text-center">⚙️</span>
@@ -84,7 +85,7 @@ export function Sidebar({ activePage, onNavigate }: SidebarProps) {
               {!onboardingComplete && (
                 <span className="text-amber-400 text-xs" title="Setup incomplete">⚠️</span>
               )}
-            </button>
+            </Link>
           </li>
         </ul>
       </div>
