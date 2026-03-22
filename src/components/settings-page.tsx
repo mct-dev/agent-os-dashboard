@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,6 +14,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
+import { LinearIcon } from "@/components/linear-icon"
+import { useAppState } from "@/lib/store"
 
 const DAISY_THEMES = [
   "light", "dark", "cupcake", "bumblebee", "emerald", "corporate",
@@ -45,6 +48,7 @@ interface UserSettings {
 type BridgeStatus = "checking" | "connected" | "disconnected" | "not-configured"
 
 export function SettingsPage() {
+  const { setLinearConnected } = useAppState()
   const [settings, setSettings] = useState<UserSettings>({})
   const [bridgeStatus, setBridgeStatus] = useState<BridgeStatus>("checking")
   const [showApiKey, setShowApiKey] = useState(false)
@@ -55,6 +59,12 @@ export function SettingsPage() {
   const [saving, setSaving] = useState(false)
   const [testResult, setTestResult] = useState<{ ok: boolean; error?: string } | null>(null)
   const [currentTheme, setCurrentTheme] = useState("dark")
+  const [linearStatus, setLinearStatus] = useState<"checking" | "connected" | "disconnected" | "not-configured">("checking")
+  const [linearWorkspace, setLinearWorkspace] = useState("")
+  const [linearEmail, setLinearEmail] = useState("")
+  const [linearKey, setLinearKey] = useState("")
+  const [editingLinear, setEditingLinear] = useState(false)
+  const [showLinearKey, setShowLinearKey] = useState(false)
 
   useEffect(() => {
     const saved = localStorage.getItem('daisyui-theme')
@@ -83,12 +93,30 @@ export function SettingsPage() {
     }
   }, [])
 
+  async function checkLinearStatus() {
+    setLinearStatus("checking")
+    try {
+      const res = await fetch("/api/linear/status")
+      const data = await res.json()
+      if (data.connected) {
+        setLinearStatus("connected")
+        setLinearWorkspace(data.workspace || "")
+        setLinearEmail(data.email || "")
+      } else {
+        setLinearStatus("disconnected")
+      }
+    } catch {
+      setLinearStatus("disconnected")
+    }
+  }
+
   useEffect(() => {
     fetch("/api/user-settings")
       .then((res) => res.json())
       .then((data) => {
         setSettings(data)
         checkBridgeStatus(data.bridgeUrl, data.bridgeApiKey)
+        checkLinearStatus()
       })
       .catch(() => {})
   }, [checkBridgeStatus])
@@ -152,6 +180,30 @@ export function SettingsPage() {
   const copyApiKey = () => {
     if (settings.bridgeApiKey) {
       navigator.clipboard.writeText(settings.bridgeApiKey)
+    }
+  }
+
+  async function saveLinearKey() {
+    if (!linearKey.trim()) return
+    try {
+      const res = await fetch("/api/linear/connect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ apiKey: linearKey }),
+      })
+      const data = await res.json()
+      if (data.connected) {
+        setLinearStatus("connected")
+        setLinearWorkspace(data.workspace || "")
+        setLinearEmail(data.email || "")
+        setEditingLinear(false)
+        setLinearConnected(true)
+        toast.success("Linear connected")
+      } else {
+        toast.error("Invalid Linear API key")
+      }
+    } catch {
+      toast.error("Failed to connect Linear")
     }
   }
 
@@ -266,6 +318,75 @@ export function SettingsPage() {
             </p>
           </div>
         </section>
+
+        <Separator />
+
+        {/* Linear Integration */}
+        <div className="card bg-base-200 border border-base-300">
+          <div className="card-body gap-4">
+            <div className="flex items-center gap-2">
+              <LinearIcon size={20} />
+              <h2 className="card-title text-sm">Linear</h2>
+              {linearStatus === "connected" && (
+                <span className="badge badge-success badge-xs ml-1">Connected</span>
+              )}
+              {linearStatus === "disconnected" && (
+                <span className="badge badge-error badge-xs ml-1">Not Connected</span>
+              )}
+              {linearStatus === "checking" && (
+                <span className="badge badge-ghost badge-xs ml-1">Checking...</span>
+              )}
+            </div>
+
+            {linearStatus === "connected" && !editingLinear ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-base-content/60">
+                    Workspace: <span className="text-base-content/80 font-medium">{linearWorkspace}</span>
+                    {linearEmail && <> · {linearEmail}</>}
+                  </div>
+                  <button className="btn btn-ghost btn-xs" onClick={() => setEditingLinear(true)}>
+                    Edit
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <label className="label text-xs">API Key</label>
+                  <div className="flex gap-2">
+                    <input
+                      type={showLinearKey ? "text" : "password"}
+                      className="input input-bordered input-sm flex-1 font-mono"
+                      placeholder="lin_api_..."
+                      value={linearKey}
+                      onChange={(e) => setLinearKey(e.target.value)}
+                    />
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => setShowLinearKey(!showLinearKey)}
+                    >
+                      {showLinearKey ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                  <p className="text-xs text-base-content/50 mt-1">
+                    Create at Linear → Settings → API → Personal API keys
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button className="btn btn-primary btn-sm" onClick={saveLinearKey}>
+                    Connect
+                  </button>
+                  {editingLinear && (
+                    <button className="btn btn-ghost btn-sm" onClick={() => setEditingLinear(false)}>
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
 
         <Separator />
 

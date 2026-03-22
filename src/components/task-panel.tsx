@@ -23,6 +23,7 @@ import { useAppState } from "@/lib/store"
 import { CommentThread } from "@/components/comment-thread"
 import { STATUS_CONFIG, PRIORITY_CONFIG, STATUSES, LLM_MODELS, type AgentRun } from "@/lib/types"
 import { updateTask as apiUpdateTask, startRun, stopRun } from "@/lib/api-client"
+import { LinearLinkSection } from "@/components/linear-link-section"
 import { toast } from "sonner"
 
 const TERMINAL_STATUSES = new Set(["completed", "failed", "stopped"])
@@ -338,6 +339,13 @@ export function TaskPanel() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <Separator />
+
+              {/* Linked Linear Issues */}
+              <div className="px-4 py-2">
+                <LinearLinkSection task={task} />
               </div>
 
               <Separator />

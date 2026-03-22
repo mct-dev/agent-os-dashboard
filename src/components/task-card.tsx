@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { LinearIcon } from "@/components/linear-icon"
 import type { Task, AgentRun } from "@/lib/types"
 import { PRIORITY_CONFIG, LLM_MODELS } from "@/lib/types"
 import { useAppState } from "@/lib/store"
@@ -138,6 +139,24 @@ export function TaskCard({ task, onDelete }: TaskCardProps) {
           Run
         </Button>
       </div>
+
+      {/* Linear badge row */}
+      {task.linearLinks && task.linearLinks.length > 0 && (
+        <div className="flex items-center gap-1 mt-1">
+          <span
+            className="inline-flex items-center gap-1 text-[11px] font-semibold px-1.5 py-0.5 rounded"
+            style={{ backgroundColor: "#5E6AD220", color: "#5E6AD2" }}
+          >
+            <LinearIcon size={10} />
+            {task.linearLinks[0].linearTeamKey}-{task.linearLinks[0].linearIssueNumber}
+          </span>
+          {task.linearLinks.length > 1 && (
+            <span className="text-[11px] text-base-content/50">
+              +{task.linearLinks.length - 1} more
+            </span>
+          )}
+        </div>
+      )}
     </div>
   )
 }

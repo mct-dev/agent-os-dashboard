@@ -26,6 +26,7 @@ export default function DashboardLayout({
   const [sops, setSops] = useState<SOP[]>([])
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
   const [scheduledJobs, setScheduledJobs] = useState<ScheduledJob[]>([])
+  const [linearConnected, setLinearConnected] = useState(false)
 
   const refreshTasks = useCallback(async () => {
     setTasks(await fetchTasks())
@@ -49,6 +50,13 @@ export default function DashboardLayout({
 
   const refreshSchedules = useCallback(async () => {
     setScheduledJobs(await fetchSchedules())
+  }, [])
+
+  useEffect(() => {
+    fetch("/api/linear/status")
+      .then((r) => r.json())
+      .then((d) => setLinearConnected(d.connected === true))
+      .catch(() => setLinearConnected(false))
   }, [])
 
   useEffect(() => {
@@ -82,6 +90,7 @@ export default function DashboardLayout({
         refreshSops,
         refreshInbox,
         scheduledJobs, setScheduledJobs, refreshSchedules,
+        linearConnected, setLinearConnected,
       }}
     >
       <div className="flex min-h-screen">
