@@ -22,7 +22,12 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json()
-  const { bridgeUrl, bridgeApiKey, bridgeName, onboardingComplete } = body
+  const { bridgeUrl, bridgeApiKey, bridgeName, onboardingComplete, defaultPage } = body
+
+  const VALID_PAGES = ["/board", "/inbox", "/projects", "/sops", "/agents", "/settings"]
+  if (defaultPage !== undefined && !VALID_PAGES.includes(defaultPage)) {
+    return NextResponse.json({ error: "Invalid defaultPage" }, { status: 400 })
+  }
 
   const settings = await prisma.userSettings.upsert({
     where: { userId: session.user.email },
@@ -31,6 +36,7 @@ export async function POST(req: Request) {
       ...(bridgeApiKey !== undefined && { bridgeApiKey }),
       ...(bridgeName !== undefined && { bridgeName }),
       ...(onboardingComplete !== undefined && { onboardingComplete }),
+      ...(defaultPage !== undefined && { defaultPage }),
     },
     create: {
       userId: session.user.email,
@@ -38,6 +44,7 @@ export async function POST(req: Request) {
       bridgeApiKey: bridgeApiKey ?? null,
       bridgeName: bridgeName ?? null,
       onboardingComplete: onboardingComplete ?? false,
+      defaultPage: defaultPage ?? "/board",
     },
   })
 

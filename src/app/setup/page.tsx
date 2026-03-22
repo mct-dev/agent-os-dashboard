@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useSession, signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,6 +14,7 @@ type ConnectionStatus = "idle" | "testing" | "connected" | "failed"
 
 export default function SetupPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { data: session, status: sessionStatus } = useSession()
   const [step, setStep] = useState(0)
   const [bridgeUrl, setBridgeUrl] = useState("")
@@ -30,9 +31,12 @@ export default function SetupPage() {
         .then((res) => res.json())
         .then((data) => {
           if (data.onboardingComplete) {
-            // Already onboarded — set cookie and redirect
             document.cookie = "onboarding-complete=true; path=/; max-age=31536000"
-            router.push("/")
+            const callbackUrl = searchParams.get("callbackUrl")
+            const destination = callbackUrl?.startsWith("/") && !callbackUrl.startsWith("//")
+              ? callbackUrl
+              : "/"
+            router.push(destination)
             return
           }
           if (data.bridgeUrl) setBridgeUrl(data.bridgeUrl)
@@ -41,7 +45,7 @@ export default function SetupPage() {
         })
         .catch(() => {})
     }
-  }, [session, router])
+  }, [session, router, searchParams])
 
   const testConnection = async () => {
     setConnectionStatus("testing")
@@ -96,7 +100,12 @@ export default function SetupPage() {
         body: JSON.stringify({ onboardingComplete: true }),
       })
       document.cookie = "onboarding-complete=true; path=/; max-age=31536000"
-      router.push("/")
+      // Redirect to callbackUrl if it's a valid relative path, otherwise home
+      const callbackUrl = searchParams.get("callbackUrl")
+      const destination = callbackUrl?.startsWith("/") && !callbackUrl.startsWith("//")
+        ? callbackUrl
+        : "/"
+      router.push(destination)
     } catch {
       router.push("/")
     } finally {
