@@ -85,11 +85,19 @@ export async function POST(req: NextRequest) {
         const newTask = await prisma.task.create({
           data: {
             title: taskTitle,
-            status: "TODO",
+            status: "IN_PROGRESS",
             projectId: job.projectId ?? null,
           },
         })
         taskId = newTask.id
+      }
+
+      // Set task to In Progress
+      if (taskId) {
+        await prisma.task.update({
+          where: { id: taskId },
+          data: { status: "IN_PROGRESS" },
+        }).catch(() => {}) // ignore if task doesn't exist
       }
 
       // Dispatch to bridge

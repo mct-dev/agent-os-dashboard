@@ -37,6 +37,7 @@ import {
   fetchScheduleRuns,
 } from "@/lib/api-client"
 import type { ScheduleRun } from "@/lib/api-client"
+import { RunLogModal } from "@/components/run-log-modal"
 import { toast } from "sonner"
 import { DAY_NAMES, PRESET_LABELS } from "@/lib/schedule-utils"
 import type { ScheduledJob, SchedulePreset } from "@/lib/types"
@@ -154,6 +155,8 @@ export function ScheduleJobModal({
   // ── Run history ────────────────────────────────────────────────
   const [scheduleRuns, setScheduleRuns] = useState<ScheduleRun[]>([])
   const [runsLoading, setRunsLoading] = useState(false)
+  const [viewingRunId, setViewingRunId] = useState<string | null>(null)
+  const viewingRun = scheduleRuns.find((r) => r.id === viewingRunId)
 
   const isEditing = !!editJob
 
@@ -723,7 +726,7 @@ export function ScheduleJobModal({
               <div className="max-h-40 overflow-y-auto space-y-1">
                 {runsLoading && <p className="text-xs text-base-content/50">Loading...</p>}
                 {scheduleRuns.map((run) => (
-                  <div key={run.id} className="flex items-center gap-2 text-xs py-1">
+                  <div key={run.id} className="flex items-center gap-2 text-xs py-1 cursor-pointer hover:bg-base-200 rounded px-1 -mx-1" onClick={() => setViewingRunId(run.id)}>
                     <span className={`w-2 h-2 rounded-full shrink-0 ${
                       run.status === "COMPLETED" ? "bg-green-400" :
                       run.status === "RUNNING" ? "bg-amber-400 animate-pulse" :
@@ -782,6 +785,18 @@ export function ScheduleJobModal({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <RunLogModal
+        runId={viewingRunId}
+        runMeta={viewingRun ? {
+          model: viewingRun.model,
+          status: viewingRun.status,
+          startedAt: viewingRun.startedAt ?? undefined,
+          costUsd: viewingRun.costUsd,
+          tokenCount: viewingRun.tokenCount,
+        } : undefined}
+        onClose={() => setViewingRunId(null)}
+      />
     </>
   )
 }

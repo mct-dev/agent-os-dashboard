@@ -33,5 +33,16 @@ export async function POST(req: NextRequest) {
     },
   })
 
+  // Update task status based on run outcome
+  if (run.taskId) {
+    const taskStatus = prismaStatus === "COMPLETED" ? "DONE" : prismaStatus === "FAILED" ? "BLOCKED" : undefined
+    if (taskStatus) {
+      await prisma.task.update({
+        where: { id: run.taskId },
+        data: { status: taskStatus },
+      }).catch(() => {})
+    }
+  }
+
   return NextResponse.json({ ok: true })
 }

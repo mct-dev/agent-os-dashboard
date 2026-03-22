@@ -24,6 +24,7 @@ import { CommentThread } from "@/components/comment-thread"
 import { STATUS_CONFIG, PRIORITY_CONFIG, STATUSES, LLM_MODELS, type AgentRun } from "@/lib/types"
 import { updateTask as apiUpdateTask, startRun, stopRun } from "@/lib/api-client"
 import { LinearLinkSection } from "@/components/linear-link-section"
+import { RunLogModal } from "@/components/run-log-modal"
 import { toast } from "sonner"
 
 const TERMINAL_STATUSES = new Set(["completed", "failed", "stopped"])
@@ -92,6 +93,7 @@ export function TaskPanel() {
   const [runModel, setRunModel] = useState<string>(LLM_MODELS[0])
   const [runPrompt, setRunPrompt] = useState("")
   const [isStartingRun, setIsStartingRun] = useState(false)
+  const [viewingRun, setViewingRun] = useState<AgentRun | null>(null)
 
   // Update prompt when task changes
   useEffect(() => {
@@ -379,7 +381,8 @@ export function TaskPanel() {
                     {task.runs.map((run) => (
                       <div
                         key={run.id}
-                        className="bg-base-200 rounded-md p-3 border border-base-300"
+                        className="bg-base-200 rounded-md p-3 border border-base-300 cursor-pointer hover:border-base-content/20 transition-colors"
+                        onClick={() => setViewingRun(run)}
                       >
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-xs font-mono text-base-content/60">{run.model}</span>
@@ -461,6 +464,18 @@ export function TaskPanel() {
           </div>
         )}
       </SheetContent>
+
+      <RunLogModal
+        runId={viewingRun?.id ?? null}
+        runMeta={viewingRun ? {
+          model: viewingRun.model,
+          status: viewingRun.status,
+          startedAt: viewingRun.startedAt,
+          costUsd: viewingRun.costUsd,
+          tokenCount: viewingRun.tokenCount,
+        } : undefined}
+        onClose={() => setViewingRun(null)}
+      />
     </Sheet>
   )
 }
