@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   const tasks = await prisma.task.findMany({
     where: project ? { projectId: project } : undefined,
     orderBy: { updatedAt: "desc" },
-    include: { runs: { orderBy: { startedAt: "desc" } } },
+    include: { runs: { orderBy: { startedAt: "desc" } }, linearLinks: true },
   })
 
   return NextResponse.json(tasks.map(serializeTask))

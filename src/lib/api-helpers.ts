@@ -1,8 +1,8 @@
-import type { Task as PrismaTask, AgentRun as PrismaRun, Comment as PrismaComment } from "@prisma/client"
+import type { Task as PrismaTask, AgentRun as PrismaRun, Comment as PrismaComment, LinearLink as PrismaLinearLink } from "@prisma/client"
 import { NextRequest } from "next/server"
 import { auth } from "@/lib/auth"
 
-type TaskWithRuns = PrismaTask & { runs?: PrismaRun[] }
+type TaskWithRuns = PrismaTask & { runs?: PrismaRun[]; linearLinks?: PrismaLinearLink[] }
 
 export async function authenticate(req: NextRequest): Promise<boolean> {
   const apiKey = req.headers.get("x-api-key")
@@ -28,6 +28,21 @@ export function serializeTask(task: TaskWithRuns) {
       startedAt: r.startedAt.toISOString(),
       endedAt: r.endedAt?.toISOString() ?? null,
       bridgeRunId: r.bridgeRunId,
+    })),
+    linearLinks: (task.linearLinks ?? []).map((link) => ({
+      id: link.id,
+      taskId: link.taskId,
+      linearIssueId: link.linearIssueId,
+      linearIssueUrl: link.linearIssueUrl,
+      linearTeamKey: link.linearTeamKey,
+      linearIssueNumber: link.linearIssueNumber,
+      linearTitle: link.linearTitle,
+      linearStatus: link.linearStatus,
+      linearPriority: link.linearPriority,
+      linearAssignee: link.linearAssignee,
+      syncedAt: link.syncedAt?.toISOString?.() ?? link.syncedAt,
+      createdAt: link.createdAt?.toISOString?.() ?? link.createdAt,
+      updatedAt: link.updatedAt?.toISOString?.() ?? link.updatedAt,
     })),
     createdAt: task.createdAt.toISOString(),
     updatedAt: task.updatedAt.toISOString(),
