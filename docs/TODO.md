@@ -50,6 +50,9 @@ The following SQL must be run in Supabase SQL Editor before deploying:
 
 Run them in order. Migration 2 creates new tables and migrates Task.project enum to FK.
 
+## Tech Debt
+- [ ] Rename `ICARUS_API_KEY` to something descriptive (e.g., `DASHBOARD_API_KEY` or `INTERNAL_API_KEY`). Currently used as the shared secret for bridge↔dashboard auth (`x-api-key` header) and run completion callbacks. Referenced in: `.env.local`, Vercel env vars, `api-helpers.ts` `authenticate()`, `runs/callback/route.ts`, and bridge `.env` docs. The name is a holdover from early development and confuses new readers.
+
 ## Phase 2 - SOP Engine (deferred)
 - [ ] Multi-step orchestration (sequential stage execution)
 - [ ] Sub-agent spawning per stage
