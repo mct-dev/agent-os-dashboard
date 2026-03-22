@@ -15,6 +15,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { LinearIcon } from "@/components/linear-icon"
+import { useAppState } from "@/lib/store"
 
 const DAISY_THEMES = [
   "light", "dark", "cupcake", "bumblebee", "emerald", "corporate",
@@ -47,6 +48,7 @@ interface UserSettings {
 type BridgeStatus = "checking" | "connected" | "disconnected" | "not-configured"
 
 export function SettingsPage() {
+  const { setLinearConnected } = useAppState()
   const [settings, setSettings] = useState<UserSettings>({})
   const [bridgeStatus, setBridgeStatus] = useState<BridgeStatus>("checking")
   const [showApiKey, setShowApiKey] = useState(false)
@@ -195,6 +197,7 @@ export function SettingsPage() {
         setLinearWorkspace(data.workspace || "")
         setLinearEmail(data.email || "")
         setEditingLinear(false)
+        setLinearConnected(true)
         toast.success("Linear connected")
       } else {
         toast.error("Invalid Linear API key")
