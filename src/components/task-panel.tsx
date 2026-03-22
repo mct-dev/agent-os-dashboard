@@ -202,7 +202,7 @@ export function TaskPanel() {
 
   return (
     <Sheet open={!!task} onOpenChange={(open) => { if (!open) setSelectedTaskId(null) }}>
-      <SheetContent className="w-[480px] sm:w-[520px] overflow-y-auto p-0">
+      <SheetContent className="w-[90vw] max-w-[800px] overflow-y-auto p-0">
         {task && (
           <div className="flex flex-col h-full">
             {/* Header */}
