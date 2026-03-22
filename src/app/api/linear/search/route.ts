@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
   let issues
   if (q.trim()) {
-    issues = await client.issueSearch(q, { filter, first: 50 })
+    issues = await client.issueSearch({ query: q, filter, first: 50 })
   } else {
     issues = await client.issues({ filter, first: 50 })
   }
