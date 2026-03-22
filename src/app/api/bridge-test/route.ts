@@ -14,31 +14,36 @@ export async function POST(req: Request) {
   }
 
   try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 30000)
+    const base = bridgeUrl.replace(/\/+$/, "")
+    const headers = { "x-api-key": bridgeApiKey || "" }
 
-    const url = bridgeUrl.replace(/\/+$/, "") + "/api/health"
-    const res = await fetch(url, {
-      headers: {
-        "x-api-key": bridgeApiKey || "",
-      },
-      signal: controller.signal,
+    // Hit an authenticated endpoint to validate both connectivity and API key
+    const toolsRes = await fetch(base + "/api/tools", {
+      headers,
+      signal: AbortSignal.timeout(30000),
     })
 
-    clearTimeout(timeout)
-
-    if (!res.ok) {
+    if (!toolsRes.ok) {
+      const hint = toolsRes.status === 401 ? " (check API key)" : ""
       return NextResponse.json({
         ok: false,
-        error: `HTTP ${res.status}: ${res.statusText}`,
+        error: `HTTP ${toolsRes.status}: ${toolsRes.statusText}${hint}`,
       })
     }
 
-    const data = await res.json()
-    return NextResponse.json({
-      ok: true,
-      version: data.version ?? "unknown",
-    })
+    // Fetch version from health endpoint
+    let version = "unknown"
+    try {
+      const healthRes = await fetch(base + "/api/health", {
+        signal: AbortSignal.timeout(5000),
+      })
+      if (healthRes.ok) {
+        const health = await healthRes.json()
+        version = health.version ?? "unknown"
+      }
+    } catch { /* version is optional */ }
+
+    return NextResponse.json({ ok: true, version })
   } catch (err: unknown) {
     let message = "Unknown error"
     if (err instanceof Error) {
