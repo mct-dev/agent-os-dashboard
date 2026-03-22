@@ -163,7 +163,7 @@ async function main() {
 
   // GET /api/health
   app.get("/api/health", (_req, res) =>
-    res.json({ ok: true, version: "1.0.0" })
+    res.json({ ok: true, version: "1.0.0", schedulerEnabled: !!(DASHBOARD_URL && CRON_SECRET) })
   )
 
   // On startup: reap orphaned runs

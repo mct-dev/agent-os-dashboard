@@ -51,6 +51,7 @@ export function SettingsPage() {
   const { setLinearConnected } = useAppState()
   const [settings, setSettings] = useState<UserSettings>({})
   const [bridgeStatus, setBridgeStatus] = useState<BridgeStatus>("checking")
+  const [schedulerEnabled, setSchedulerEnabled] = useState<boolean | null>(null)
   const [showApiKey, setShowApiKey] = useState(false)
   const [editing, setEditing] = useState(false)
   const [editUrl, setEditUrl] = useState("")
@@ -88,8 +89,10 @@ export function SettingsPage() {
       })
       const data = await res.json()
       setBridgeStatus(data.ok ? "connected" : "disconnected")
+      setSchedulerEnabled(data.ok ? (data.schedulerEnabled ?? null) : null)
     } catch {
       setBridgeStatus("disconnected")
+      setSchedulerEnabled(null)
     }
   }, [])
 
@@ -306,6 +309,19 @@ export function SettingsPage() {
               </Button>
             </div>
           </div>
+
+          {bridgeStatus === "connected" && schedulerEnabled === false && (
+            <div className="bg-warning/10 border border-warning/30 rounded-lg p-3 space-y-2">
+              <p className="text-xs font-medium text-warning">Scheduler polling is disabled</p>
+              <p className="text-[11px] text-base-content/60">
+                Scheduled jobs won&apos;t run until the bridge has <code className="bg-base-300 px-1 rounded text-[10px]">DASHBOARD_URL</code> and <code className="bg-base-300 px-1 rounded text-[10px]">CRON_SECRET</code> set in its <code className="bg-base-300 px-1 rounded text-[10px]">.env</code> file. Add these and restart the bridge:
+              </p>
+              <div className="text-[10px] font-mono bg-base-300/50 rounded p-2 space-y-0.5">
+                <p>DASHBOARD_URL=https://your-vercel-app.vercel.app</p>
+                <p>CRON_SECRET=your-secret-here</p>
+              </div>
+            </div>
+          )}
 
           <Separator className="my-2" />
 

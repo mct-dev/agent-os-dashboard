@@ -283,17 +283,24 @@ export default function SetupPage() {
                 <p className="pl-4 text-base-content/80 mt-1">npm install -g @anthropic-ai/claude-code</p>
               </div>
               <div>
-                <p className="text-base-content/50">4. Start the bridge</p>
+                <p className="text-base-content/50">4. Enable scheduled jobs (optional)</p>
+                <p className="pl-4 text-base-content/60 mt-1"># Add to ~/agent-os/bridge/.env:</p>
+                <p className="pl-4 text-base-content/80 mt-1">DASHBOARD_URL=https://your-vercel-app.vercel.app</p>
+                <p className="pl-4 text-base-content/80">CRON_SECRET=your-secret-here</p>
+                <p className="pl-4 text-base-content/60 mt-1"># The bridge polls the dashboard to run scheduled jobs</p>
+              </div>
+              <div>
+                <p className="text-base-content/50">5. Start the bridge</p>
                 <p className="pl-4 text-base-content/80 mt-1">cd ~/agent-os/bridge && npm start</p>
               </div>
               <div>
-                <p className="text-base-content/50">5. Expose via Tailscale Funnel (required — allows the web app to reach your bridge)</p>
+                <p className="text-base-content/50">6. Expose via Tailscale Funnel (required — allows the web app to reach your bridge)</p>
                 <p className="pl-4 text-base-content/80 mt-1">tailscale funnel 4242</p>
                 <p className="pl-4 text-base-content/60 mt-1"># This makes your bridge reachable from the internet, not just your local network</p>
                 <p className="pl-4 text-base-content/60 mt-1"># Note: requires Tailscale installed via Homebrew (not App Store) on macOS</p>
               </div>
               <div>
-                <p className="text-base-content/50">6. Get your bridge URL</p>
+                <p className="text-base-content/50">7. Get your bridge URL</p>
                 <p className="pl-4 text-base-content/80 mt-1">tailscale status --self --json | python3 -c &quot;import json,sys; d=json.load(sys.stdin); print(&apos;https://&apos;+d[&apos;Self&apos;][&apos;DNSName&apos;].rstrip(&apos;.&apos;))&quot;</p>
                 <p className="pl-4 text-base-content/60 mt-1"># Paste this URL into the Bridge URL field above</p>
               </div>

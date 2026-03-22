@@ -31,8 +31,9 @@ export async function POST(req: Request) {
       })
     }
 
-    // Fetch version from health endpoint
+    // Fetch version + scheduler status from health endpoint
     let version = "unknown"
+    let schedulerEnabled = false
     try {
       const healthRes = await fetch(base + "/api/health", {
         signal: AbortSignal.timeout(5000),
@@ -40,10 +41,11 @@ export async function POST(req: Request) {
       if (healthRes.ok) {
         const health = await healthRes.json()
         version = health.version ?? "unknown"
+        schedulerEnabled = health.schedulerEnabled ?? false
       }
-    } catch { /* version is optional */ }
+    } catch { /* health details are optional */ }
 
-    return NextResponse.json({ ok: true, version })
+    return NextResponse.json({ ok: true, version, schedulerEnabled })
   } catch (err: unknown) {
     let message = "Unknown error"
     if (err instanceof Error) {
