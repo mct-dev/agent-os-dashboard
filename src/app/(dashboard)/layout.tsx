@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
+import { useSearchParams } from "next/navigation"
 import { AppContext } from "@/lib/store"
 import {
   fetchTasks,
@@ -24,9 +25,30 @@ export default function DashboardLayout({
   const [inbox, setInbox] = useState<InboxItem[]>([])
   const [agents, setAgents] = useState<AgentConfig[]>([])
   const [sops, setSops] = useState<SOP[]>([])
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+  const searchParams = useSearchParams()
+  const [selectedTaskId, setSelectedTaskIdRaw] = useState<string | null>(searchParams.get("task"))
   const [scheduledJobs, setScheduledJobs] = useState<ScheduledJob[]>([])
   const [linearConnected, setLinearConnected] = useState(false)
+  const isInitialMount = useRef(true)
+
+  // Sync selectedTaskId to URL
+  const setSelectedTaskId = useCallback((id: string | null) => {
+    setSelectedTaskIdRaw(id)
+    const url = new URL(window.location.href)
+    if (id) {
+      url.searchParams.set("task", id)
+    } else {
+      url.searchParams.delete("task")
+    }
+    window.history.replaceState({}, "", url.toString())
+  }, [])
+
+  // On mount, if URL has ?task=, keep it (already set via useState initializer)
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+    }
+  }, [])
 
   const refreshTasks = useCallback(async () => {
     setTasks(await fetchTasks())
