@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useRef, useCallback } from "react"
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet"
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -203,12 +203,12 @@ export function TaskPanel() {
   }
 
   return (
-    <Sheet open={!!task} onOpenChange={(open) => { if (!open) setSelectedTaskId(null) }}>
-      <SheetContent className="w-[90vw] max-w-[800px] overflow-y-auto p-0">
+    <Dialog open={!!task} onOpenChange={(open) => { if (!open) setSelectedTaskId(null) }}>
+      <DialogContent className="w-[95vw] max-w-[1100px] max-h-[90vh] overflow-y-auto p-0">
         {task && (
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col">
             {/* Header */}
-            <SheetHeader className="px-6 pt-6 pb-4">
+            <DialogHeader className="px-6 pt-6 pb-4">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-mono text-base-content/60">AGT-{task.id}</span>
                 <span className="text-base-content/60">→</span>
@@ -219,8 +219,8 @@ export function TaskPanel() {
                   {PRIORITY_CONFIG[task.priority].icon} {task.priority}
                 </Badge>
               </div>
-              <SheetTitle className="sr-only">Task Details</SheetTitle>
-            </SheetHeader>
+              <DialogTitle className="sr-only">Task Details</DialogTitle>
+            </DialogHeader>
 
             <div className="px-6 pb-6 space-y-0">
               {/* Run Dispatch */}
@@ -463,7 +463,7 @@ export function TaskPanel() {
             </div>
           </div>
         )}
-      </SheetContent>
+      </DialogContent>
 
       <RunLogModal
         runId={viewingRun?.id ?? null}
@@ -476,6 +476,6 @@ export function TaskPanel() {
         } : undefined}
         onClose={() => setViewingRun(null)}
       />
-    </Sheet>
+    </Dialog>
   )
 }
