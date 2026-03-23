@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   const uniqueUserIds = [...new Set(dueJobs.map((j) => j.userId))]
   const settingsByUserId = new Map<
     string,
-    { bridgeUrl: string | null; bridgeApiKey: string | null }
+    { bridgeUrl: string | null; bridgeApiKey: string | null; defaultCwd: string | null }
   >()
   await Promise.all(
     uniqueUserIds.map(async (userId) => {
@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
       settingsByUserId.set(userId, {
         bridgeUrl: settings?.bridgeUrl ?? null,
         bridgeApiKey: settings?.bridgeApiKey ?? null,
+        defaultCwd: settings?.defaultCwd ?? null,
       })
     })
   )
@@ -121,6 +122,7 @@ export async function POST(req: NextRequest) {
             model: job.model,
             callback_url: `${process.env.NEXTAUTH_URL ?? ""}/api/runs/callback`,
             callback_api_key: process.env.ICARUS_API_KEY ?? "",
+            cwd: userSettings.defaultCwd || undefined,
           }),
           signal: runController.signal,
         })

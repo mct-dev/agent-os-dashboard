@@ -172,6 +172,7 @@ model UserSettings {
   bridgeApiKey       String?
   bridgeName         String?
   linearApiKey       String?
+  defaultCwd         String?
   onboardingComplete Boolean  @default(false)
   defaultPage        String   @default("/board")
   createdAt          DateTime @default(now())

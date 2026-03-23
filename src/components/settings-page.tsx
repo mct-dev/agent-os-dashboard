@@ -40,6 +40,7 @@ interface UserSettings {
   bridgeUrl?: string | null
   bridgeApiKey?: string | null
   bridgeName?: string | null
+  defaultCwd?: string | null
   onboardingComplete?: boolean
   defaultPage?: string | null
   userId?: string
@@ -60,6 +61,7 @@ export function SettingsPage() {
   const [editUrl, setEditUrl] = useState("")
   const [editKey, setEditKey] = useState("")
   const [editName, setEditName] = useState("")
+  const [editCwd, setEditCwd] = useState("")
   const [saving, setSaving] = useState(false)
   const [testResult, setTestResult] = useState<{ ok: boolean; error?: string } | null>(null)
   const [currentTheme, setCurrentTheme] = useState("dark")
@@ -131,6 +133,7 @@ export function SettingsPage() {
     setEditUrl(settings.bridgeUrl || "")
     setEditKey(settings.bridgeApiKey || "")
     setEditName(settings.bridgeName || "")
+    setEditCwd(settings.defaultCwd || "")
     setTestResult(null)
     setEditing(true)
   }
@@ -160,6 +163,7 @@ export function SettingsPage() {
           bridgeUrl: editUrl || null,
           bridgeApiKey: editKey || null,
           bridgeName: editName || null,
+          defaultCwd: editCwd || null,
         }),
       })
       const data = await res.json()
@@ -296,6 +300,11 @@ export function SettingsPage() {
                   </Button>
                 </div>
               )}
+            </div>
+
+            <div>
+              <Label className="text-xs text-base-content/60">Default Working Directory</Label>
+              <p className="text-sm font-mono">{settings.defaultCwd || "~ (home directory)"}</p>
             </div>
 
             <div className="flex gap-2">
@@ -563,6 +572,16 @@ export function SettingsPage() {
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 placeholder="Work MacBook"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-cwd">Default Working Directory</Label>
+              <Input
+                id="edit-cwd"
+                value={editCwd}
+                onChange={(e) => setEditCwd(e.target.value)}
+                placeholder="/home/user/projects"
+                className="font-mono"
               />
             </div>
             <div className="flex items-center gap-3">

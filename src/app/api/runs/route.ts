@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
         sop_id: task.sopId ?? "",
         prompt: enrichedPrompt,
         model,
+        cwd: settings.defaultCwd || undefined,
       }),
       signal: controller.signal,
     })

@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json()
-  const { bridgeUrl, bridgeApiKey, bridgeName, onboardingComplete, defaultPage } = body
+  const { bridgeUrl, bridgeApiKey, bridgeName, defaultCwd, onboardingComplete, defaultPage } = body
 
   const VALID_PAGES = ["/board", "/inbox", "/projects", "/sops", "/agents", "/settings"]
   if (defaultPage !== undefined && !VALID_PAGES.includes(defaultPage)) {
@@ -35,6 +35,7 @@ export async function POST(req: Request) {
       ...(bridgeUrl !== undefined && { bridgeUrl }),
       ...(bridgeApiKey !== undefined && { bridgeApiKey }),
       ...(bridgeName !== undefined && { bridgeName }),
+      ...(defaultCwd !== undefined && { defaultCwd }),
       ...(onboardingComplete !== undefined && { onboardingComplete }),
       ...(defaultPage !== undefined && { defaultPage }),
     },
@@ -43,6 +44,7 @@ export async function POST(req: Request) {
       bridgeUrl: bridgeUrl ?? null,
       bridgeApiKey: bridgeApiKey ?? null,
       bridgeName: bridgeName ?? null,
+      defaultCwd: defaultCwd ?? null,
       onboardingComplete: onboardingComplete ?? false,
       defaultPage: defaultPage ?? "/board",
     },
