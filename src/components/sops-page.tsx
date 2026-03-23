@@ -222,7 +222,7 @@ export function SOPsPage() {
 
       {/* Edit/Create Dialog */}
       <Dialog open={!!editingSop} onOpenChange={(open) => { if (!open) setEditingSop(null) }}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl sm:max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {isNew ? "Create SOP" : "Edit SOP"}

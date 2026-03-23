@@ -178,7 +178,7 @@ export function RunLogModal({ runId, runMeta, onClose }: RunLogModalProps) {
 
   return (
     <Dialog open={!!runId} onOpenChange={(open) => { if (!open) onClose() }}>
-      <DialogContent className="max-w-[95vw] w-[95vw] h-[90vh] flex flex-col p-0">
+      <DialogContent className="w-[95vw] max-w-[95vw] sm:max-w-[95vw] h-[90vh] flex flex-col p-0">
         <DialogHeader className="px-6 pt-4 pb-2 shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-3 text-sm">
