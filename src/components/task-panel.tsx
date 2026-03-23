@@ -204,7 +204,7 @@ export function TaskPanel() {
 
   return (
     <Dialog open={!!task} onOpenChange={(open) => { if (!open) setSelectedTaskId(null) }}>
-      <DialogContent className="w-[75vw] max-w-none max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="w-[75vw] max-w-none sm:max-w-none max-h-[90vh] overflow-y-auto p-0">
         {task && (
           <div className="flex flex-col">
             {/* Header */}
