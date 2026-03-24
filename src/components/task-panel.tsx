@@ -437,16 +437,6 @@ export function TaskPanel() {
                             </Button>
                           </div>
                         )}
-                        {TERMINAL_STATUSES.has(run.status.toLowerCase()) && (
-                          <details className="mt-2">
-                            <summary className="text-[10px] text-base-content/40 cursor-pointer hover:text-base-content/60">
-                              Comments
-                            </summary>
-                            <div className="mt-2">
-                              <CommentThread agentRunId={run.id} />
-                            </div>
-                          </details>
-                        )}
                       </div>
                     ))}
                   </div>
