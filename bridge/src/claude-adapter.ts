@@ -34,7 +34,9 @@ export async function spawnClaudeRun(run: {
   }
 
   if (run.model) {
-    args.push("--model", run.model)
+    // Strip provider prefix (e.g., "anthropic/claude-opus-4-6" → "claude-opus-4-6")
+    const modelId = run.model.includes("/") ? run.model.split("/").pop()! : run.model
+    args.push("--model", modelId)
   }
 
   // Mark as running
