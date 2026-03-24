@@ -434,17 +434,17 @@ export async function fetchLinearStatuses(): Promise<LinearStatus[]> {
 
 export async function searchLinearIssues(params: {
   q?: string
-  teamId?: string
+  teamIds?: string[]
   assigneeId?: string
-  labelId?: string
-  statusName?: string
+  labelIds?: string[]
+  statusNames?: string[]
 }): Promise<LinearSearchResult[]> {
   const query = new URLSearchParams()
   if (params.q) query.set("q", params.q)
-  if (params.teamId) query.set("teamId", params.teamId)
+  if (params.teamIds?.length) query.set("teamIds", params.teamIds.join(","))
   if (params.assigneeId) query.set("assigneeId", params.assigneeId)
-  if (params.labelId) query.set("labelId", params.labelId)
-  if (params.statusName) query.set("statusName", params.statusName)
+  if (params.labelIds?.length) query.set("labelIds", params.labelIds.join(","))
+  if (params.statusNames?.length) query.set("statusNames", params.statusNames.join(","))
   const res = await fetch(`/api/linear/search?${query}`)
   if (!res.ok) throw new Error("Failed to search Linear issues")
   return res.json()

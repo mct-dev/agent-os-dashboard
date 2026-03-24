@@ -46,10 +46,10 @@ export function LinearSearchModal({
   title,
 }: LinearSearchModalProps) {
   const [query, setQuery] = useState("")
-  const [teamId, setTeamId] = useState("all")
+  const [teamIds, setTeamIds] = useState<string[]>([])
   const [assigneeId, setAssigneeId] = useState("all")
-  const [labelId, setLabelId] = useState("all")
-  const [statusName, setStatusName] = useState("all")
+  const [labelIds, setLabelIds] = useState<string[]>([])
+  const [statusNames, setStatusNames] = useState<string[]>([])
   const [sortBy, setSortBy] = useState<SortKey>("updated")
   const [teams, setTeams] = useState<LinearTeam[]>([])
   const [users, setUsers] = useState<LinearUser[]>([])
@@ -79,10 +79,10 @@ export function LinearSearchModal({
     try {
       const issues = await searchLinearIssues({
         q: query || undefined,
-        teamId: teamId !== "all" ? teamId : undefined,
+        teamIds: teamIds.length > 0 ? teamIds : undefined,
         assigneeId: assigneeId !== "all" ? assigneeId : undefined,
-        labelId: labelId !== "all" ? labelId : undefined,
-        statusName: statusName !== "all" ? statusName : undefined,
+        labelIds: labelIds.length > 0 ? labelIds : undefined,
+        statusNames: statusNames.length > 0 ? statusNames : undefined,
       })
       setResults(issues)
     } catch {
@@ -90,13 +90,13 @@ export function LinearSearchModal({
     } finally {
       setLoading(false)
     }
-  }, [query, teamId, assigneeId, labelId, statusName])
+  }, [query, teamIds, assigneeId, labelIds, statusNames])
 
   useEffect(() => {
     if (!open || !connected) return
     const timer = setTimeout(search, 300)
     return () => clearTimeout(timer)
-  }, [query, teamId, assigneeId, labelId, statusName, open, connected, search])
+  }, [query, teamIds, assigneeId, labelIds, statusNames, open, connected, search])
 
   const sortedResults = useMemo(() => {
     const sorted = [...results]
@@ -203,8 +203,9 @@ export function LinearSearchModal({
               />
               <div className="flex gap-2">
                 <SearchableSelect
-                  value={teamId}
-                  onValueChange={setTeamId}
+                  multi
+                  values={teamIds}
+                  onValuesChange={setTeamIds}
                   options={teamOptions}
                   allLabel="All Teams"
                   placeholder="Team"
@@ -219,16 +220,18 @@ export function LinearSearchModal({
                   className="flex-1"
                 />
                 <SearchableSelect
-                  value={statusName}
-                  onValueChange={setStatusName}
+                  multi
+                  values={statusNames}
+                  onValuesChange={setStatusNames}
                   options={statusOptions}
                   allLabel="All Statuses"
                   placeholder="Status"
                   className="flex-1"
                 />
                 <SearchableSelect
-                  value={labelId}
-                  onValueChange={setLabelId}
+                  multi
+                  values={labelIds}
+                  onValuesChange={setLabelIds}
                   options={labelOptions}
                   allLabel="All Labels"
                   placeholder="Label"

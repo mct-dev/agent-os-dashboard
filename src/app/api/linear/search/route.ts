@@ -14,16 +14,19 @@ export async function GET(req: NextRequest) {
   }
 
   const q = req.nextUrl.searchParams.get("q") || ""
-  const teamId = req.nextUrl.searchParams.get("teamId")
+  const teamIds = req.nextUrl.searchParams.get("teamIds")?.split(",").filter(Boolean)
   const assigneeId = req.nextUrl.searchParams.get("assigneeId")
-  const labelId = req.nextUrl.searchParams.get("labelId")
-  const statusName = req.nextUrl.searchParams.get("statusName")
+  const labelIds = req.nextUrl.searchParams.get("labelIds")?.split(",").filter(Boolean)
+  const statusNames = req.nextUrl.searchParams.get("statusNames")?.split(",").filter(Boolean)
 
   const filter: Record<string, unknown> = {}
-  if (teamId) filter.team = { id: { eq: teamId } }
+  if (teamIds?.length === 1) filter.team = { id: { eq: teamIds[0] } }
+  else if (teamIds && teamIds.length > 1) filter.team = { id: { in: teamIds } }
   if (assigneeId) filter.assignee = { id: { eq: assigneeId } }
-  if (labelId) filter.labels = { some: { id: { eq: labelId } } }
-  if (statusName) filter.state = { name: { eq: statusName } }
+  if (labelIds?.length === 1) filter.labels = { some: { id: { eq: labelIds[0] } } }
+  else if (labelIds && labelIds.length > 1) filter.labels = { some: { id: { in: labelIds } } }
+  if (statusNames?.length === 1) filter.state = { name: { eq: statusNames[0] } }
+  else if (statusNames && statusNames.length > 1) filter.state = { name: { in: statusNames } }
 
   let issues
   if (q.trim()) {

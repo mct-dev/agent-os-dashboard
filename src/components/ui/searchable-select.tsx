@@ -10,7 +10,10 @@ export interface SearchableSelectOption {
   icon?: React.ReactNode
 }
 
-interface SearchableSelectProps {
+// ── Single-select ──
+
+interface SingleSelectProps {
+  multi?: false
   value: string
   onValueChange: (value: string) => void
   options: SearchableSelectOption[]
@@ -19,14 +22,24 @@ interface SearchableSelectProps {
   className?: string
 }
 
-export function SearchableSelect({
-  value,
-  onValueChange,
-  options,
-  placeholder = "Select...",
-  allLabel = "All",
-  className,
-}: SearchableSelectProps) {
+// ── Multi-select ──
+
+interface MultiSelectProps {
+  multi: true
+  values: string[]
+  onValuesChange: (values: string[]) => void
+  options: SearchableSelectOption[]
+  placeholder?: string
+  allLabel?: string
+  className?: string
+}
+
+type SearchableSelectProps = SingleSelectProps | MultiSelectProps
+
+export function SearchableSelect(props: SearchableSelectProps) {
+  const { options, placeholder = "Select...", allLabel = "All", className } = props
+  const isMulti = props.multi === true
+
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
   const [highlightIndex, setHighlightIndex] = useState(0)
@@ -45,30 +58,48 @@ export function SearchableSelect({
     ? options.filter((o) => o.label.toLowerCase().includes(search.toLowerCase()))
     : options
 
-  // "all" is index 0, then filtered options are 1..N
   const totalItems = filtered.length + 1
 
-  // Reset highlight when search changes
-  useEffect(() => {
-    setHighlightIndex(0)
-  }, [search])
+  useEffect(() => { setHighlightIndex(0) }, [search])
 
-  // Scroll highlighted item into view
   useEffect(() => {
     if (!listRef.current) return
     const item = listRef.current.children[highlightIndex] as HTMLElement
     if (item) item.scrollIntoView({ block: "nearest" })
   }, [highlightIndex])
 
-  const select = useCallback((idx: number) => {
+  // Multi helpers
+  const multiValues = isMulti ? (props as MultiSelectProps).values : []
+  const isSelected = (val: string) => isMulti ? multiValues.includes(val) : (props as SingleSelectProps).value === val
+  const isAllSelected = isMulti ? multiValues.length === 0 : (props as SingleSelectProps).value === "all"
+
+  const handleSelect = useCallback((val: string) => {
+    if (isMulti) {
+      const { values, onValuesChange } = props as MultiSelectProps
+      if (val === "__all__") {
+        onValuesChange([])
+      } else {
+        const next = values.includes(val)
+          ? values.filter((v) => v !== val)
+          : [...values, val]
+        onValuesChange(next)
+      }
+      // Don't close on multi-select
+    } else {
+      const { onValueChange } = props as SingleSelectProps
+      onValueChange(val === "__all__" ? "all" : val)
+      setOpen(false)
+    }
+  }, [isMulti, props])
+
+  const selectByIndex = useCallback((idx: number) => {
     if (idx === 0) {
-      onValueChange("all")
+      handleSelect("__all__")
     } else {
       const opt = filtered[idx - 1]
-      if (opt) onValueChange(opt.value)
+      if (opt) handleSelect(opt.value)
     }
-    setOpen(false)
-  }, [filtered, onValueChange])
+  }, [filtered, handleSelect])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") {
@@ -79,15 +110,27 @@ export function SearchableSelect({
       setHighlightIndex((prev) => Math.max(prev - 1, 0))
     } else if (e.key === "Enter") {
       e.preventDefault()
-      select(highlightIndex)
+      selectByIndex(highlightIndex)
     } else if (e.key === "Escape") {
       setOpen(false)
     }
-  }, [totalItems, highlightIndex, select])
+  }, [totalItems, highlightIndex, selectByIndex])
 
-  const selectedLabel = value === "all"
-    ? allLabel
-    : options.find((o) => o.value === value)?.label ?? placeholder
+  // Display label
+  let displayLabel: string
+  if (isMulti) {
+    const count = multiValues.length
+    if (count === 0) {
+      displayLabel = allLabel
+    } else if (count === 1) {
+      displayLabel = options.find((o) => o.value === multiValues[0])?.label ?? "1 selected"
+    } else {
+      displayLabel = `${count} selected`
+    }
+  } else {
+    const val = (props as SingleSelectProps).value
+    displayLabel = val === "all" ? allLabel : options.find((o) => o.value === val)?.label ?? placeholder
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -99,7 +142,7 @@ export function SearchableSelect({
             className
           )}
         >
-          <span className="truncate">{selectedLabel}</span>
+          <span className="truncate">{displayLabel}</span>
           <svg className="w-3 h-3 ml-1 opacity-50 shrink-0" viewBox="0 0 12 12" fill="none">
             <path d="M3 5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -120,31 +163,36 @@ export function SearchableSelect({
           <button
             type="button"
             className={cn(
-              "w-full text-left text-xs px-2 py-1.5 rounded transition-colors",
+              "w-full text-left text-xs px-2 py-1.5 rounded transition-colors flex items-center gap-1.5",
               highlightIndex === 0 ? "bg-base-200" : "hover:bg-base-200",
-              value === "all" && "text-primary"
+              isAllSelected && "text-primary"
             )}
-            onClick={() => select(0)}
+            onClick={() => selectByIndex(0)}
             onMouseEnter={() => setHighlightIndex(0)}
           >
+            {isMulti && <span className={cn("w-3 h-3 border rounded-sm text-[8px] flex items-center justify-center shrink-0", isAllSelected ? "border-primary bg-primary text-primary-content" : "border-base-300")}>{isAllSelected ? "✓" : ""}</span>}
             {allLabel}
           </button>
-          {filtered.map((opt, i) => (
-            <button
-              key={opt.value}
-              type="button"
-              className={cn(
-                "w-full text-left text-xs px-2 py-1.5 rounded transition-colors flex items-center gap-1.5",
-                highlightIndex === i + 1 ? "bg-base-200" : "hover:bg-base-200",
-                value === opt.value && "text-primary"
-              )}
-              onClick={() => select(i + 1)}
-              onMouseEnter={() => setHighlightIndex(i + 1)}
-            >
-              {opt.icon}
-              <span className="truncate">{opt.label}</span>
-            </button>
-          ))}
+          {filtered.map((opt, i) => {
+            const checked = isSelected(opt.value)
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                className={cn(
+                  "w-full text-left text-xs px-2 py-1.5 rounded transition-colors flex items-center gap-1.5",
+                  highlightIndex === i + 1 ? "bg-base-200" : "hover:bg-base-200",
+                  checked && "text-primary"
+                )}
+                onClick={() => selectByIndex(i + 1)}
+                onMouseEnter={() => setHighlightIndex(i + 1)}
+              >
+                {isMulti && <span className={cn("w-3 h-3 border rounded-sm text-[8px] flex items-center justify-center shrink-0", checked ? "border-primary bg-primary text-primary-content" : "border-base-300")}>{checked ? "✓" : ""}</span>}
+                {opt.icon}
+                <span className="truncate">{opt.label}</span>
+              </button>
+            )
+          })}
           {filtered.length === 0 && (
             <p className="text-[10px] text-base-content/40 px-2 py-2">No matches</p>
           )}
