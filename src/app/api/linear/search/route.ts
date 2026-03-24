@@ -15,9 +15,13 @@ export async function GET(req: NextRequest) {
 
   const q = req.nextUrl.searchParams.get("q") || ""
   const teamId = req.nextUrl.searchParams.get("teamId")
+  const assigneeId = req.nextUrl.searchParams.get("assigneeId")
+  const labelId = req.nextUrl.searchParams.get("labelId")
 
   const filter: Record<string, unknown> = {}
   if (teamId) filter.team = { id: { eq: teamId } }
+  if (assigneeId) filter.assignee = { id: { eq: assigneeId } }
+  if (labelId) filter.labels = { some: { id: { eq: labelId } } }
 
   let issues
   if (q.trim()) {
@@ -31,6 +35,7 @@ export async function GET(req: NextRequest) {
       const state = await issue.state
       const assignee = await issue.assignee
       const team = await issue.team
+      const labels = await issue.labels()
       return {
         id: issue.id,
         identifier: issue.identifier,
@@ -42,6 +47,7 @@ export async function GET(req: NextRequest) {
         assignee: assignee?.name ?? null,
         team: { key: team?.key ?? "" },
         number: issue.number,
+        labels: labels.nodes.map((l) => ({ id: l.id, name: l.name, color: l.color })),
       }
     })
   )

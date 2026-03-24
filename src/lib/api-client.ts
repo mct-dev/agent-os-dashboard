@@ -1,4 +1,4 @@
-import type { Task, Project, AgentConfig, InboxItem, Comment, ScheduledJob, LinearLink, LinearSearchResult, LinearTeam } from "./types"
+import type { Task, Project, AgentConfig, InboxItem, Comment, ScheduledJob, LinearLink, LinearSearchResult, LinearTeam, LinearUser, LinearLabel } from "./types"
 import type { SOP } from "./sops"
 
 // ── Task CRUD ──────────────────────────────────────────────────────
@@ -408,15 +408,29 @@ export async function fetchLinearTeams(): Promise<LinearTeam[]> {
   return res.json()
 }
 
+export async function fetchLinearUsers(): Promise<LinearUser[]> {
+  const res = await fetch("/api/linear/users")
+  if (!res.ok) throw new Error("Failed to fetch Linear users")
+  return res.json()
+}
+
+export async function fetchLinearLabels(): Promise<LinearLabel[]> {
+  const res = await fetch("/api/linear/labels")
+  if (!res.ok) throw new Error("Failed to fetch Linear labels")
+  return res.json()
+}
+
 export async function searchLinearIssues(params: {
   q?: string
   teamId?: string
-  status?: string
+  assigneeId?: string
+  labelId?: string
 }): Promise<LinearSearchResult[]> {
   const query = new URLSearchParams()
   if (params.q) query.set("q", params.q)
   if (params.teamId) query.set("teamId", params.teamId)
-  if (params.status) query.set("status", params.status)
+  if (params.assigneeId) query.set("assigneeId", params.assigneeId)
+  if (params.labelId) query.set("labelId", params.labelId)
   const res = await fetch(`/api/linear/search?${query}`)
   if (!res.ok) throw new Error("Failed to search Linear issues")
   return res.json()

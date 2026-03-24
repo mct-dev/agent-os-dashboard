@@ -15,8 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { LinearIcon } from "@/components/linear-icon"
-import { searchLinearIssues, fetchLinearTeams } from "@/lib/api-client"
-import type { LinearSearchResult, LinearTeam } from "@/lib/types"
+import { searchLinearIssues, fetchLinearTeams, fetchLinearUsers, fetchLinearLabels } from "@/lib/api-client"
+import type { LinearSearchResult, LinearTeam, LinearUser, LinearLabel } from "@/lib/types"
 
 interface LinearSearchModalProps {
   open: boolean
@@ -35,7 +35,11 @@ export function LinearSearchModal({
 }: LinearSearchModalProps) {
   const [query, setQuery] = useState("")
   const [teamId, setTeamId] = useState("all")
+  const [assigneeId, setAssigneeId] = useState("all")
+  const [labelId, setLabelId] = useState("all")
   const [teams, setTeams] = useState<LinearTeam[]>([])
+  const [users, setUsers] = useState<LinearUser[]>([])
+  const [labels, setLabels] = useState<LinearLabel[]>([])
   const [results, setResults] = useState<LinearSearchResult[]>([])
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
@@ -43,6 +47,8 @@ export function LinearSearchModal({
   useEffect(() => {
     if (open) {
       fetchLinearTeams().then(setTeams).catch(() => {})
+      fetchLinearUsers().then(setUsers).catch(() => {})
+      fetchLinearLabels().then(setLabels).catch(() => {})
     }
   }, [open])
 
@@ -52,6 +58,8 @@ export function LinearSearchModal({
       const issues = await searchLinearIssues({
         q: query || undefined,
         teamId: teamId !== "all" ? teamId : undefined,
+        assigneeId: assigneeId !== "all" ? assigneeId : undefined,
+        labelId: labelId !== "all" ? labelId : undefined,
       })
       setResults(issues)
     } catch {
@@ -59,13 +67,13 @@ export function LinearSearchModal({
     } finally {
       setLoading(false)
     }
-  }, [query, teamId])
+  }, [query, teamId, assigneeId, labelId])
 
   useEffect(() => {
     if (!open) return
     const timer = setTimeout(search, 300)
     return () => clearTimeout(timer)
-  }, [query, teamId, open, search])
+  }, [query, teamId, assigneeId, labelId, open, search])
 
   function toggleIssue(id: string) {
     setSelected((prev) => {
@@ -94,7 +102,7 @@ export function LinearSearchModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl sm:max-w-2xl max-h-[80vh] flex flex-col">
+      <DialogContent className="max-w-3xl sm:max-w-3xl max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <LinearIcon size={18} />
@@ -102,26 +110,60 @@ export function LinearSearchModal({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex gap-2">
+        <div className="space-y-2">
           <input
-            className="input input-bordered input-sm flex-1"
+            className="input input-bordered input-sm w-full"
             placeholder="Search Linear issues..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <Select value={teamId} onValueChange={setTeamId}>
-            <SelectTrigger className="h-8 w-36 text-xs">
-              <SelectValue placeholder="All Teams" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Teams</SelectItem>
-              {teams.map((t) => (
-                <SelectItem key={t.id} value={t.id}>
-                  {t.key} — {t.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex gap-2">
+            <Select value={teamId} onValueChange={setTeamId}>
+              <SelectTrigger className="h-7 text-xs flex-1">
+                <SelectValue placeholder="All Teams" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Teams</SelectItem>
+                {teams.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {t.key} — {t.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={assigneeId} onValueChange={setAssigneeId}>
+              <SelectTrigger className="h-7 text-xs flex-1">
+                <SelectValue placeholder="All Assignees" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Assignees</SelectItem>
+                {users.map((u) => (
+                  <SelectItem key={u.id} value={u.id}>
+                    {u.displayName || u.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={labelId} onValueChange={setLabelId}>
+              <SelectTrigger className="h-7 text-xs flex-1">
+                <SelectValue placeholder="All Labels" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Labels</SelectItem>
+                {labels.map((l) => (
+                  <SelectItem key={l.id} value={l.id}>
+                    <span className="flex items-center gap-1.5">
+                      <span
+                        className="w-2 h-2 rounded-full shrink-0"
+                        style={{ backgroundColor: l.color }}
+                      />
+                      {l.name}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto border border-base-300 rounded-lg divide-y divide-base-300">
@@ -130,7 +172,7 @@ export function LinearSearchModal({
           )}
           {!loading && results.length === 0 && (
             <div className="p-4 text-center text-sm text-base-content/50">
-              {query ? "No issues found" : "Type to search Linear issues"}
+              {query ? "No issues found" : "Type to search or use filters"}
             </div>
           )}
           {results.map((issue) => (
@@ -150,7 +192,23 @@ export function LinearSearchModal({
                 {issue.identifier}
               </span>
               <span className="text-sm flex-1 truncate">{issue.title}</span>
-              <span className={`badge badge-xs ${statusColors[issue.status] ?? "badge-ghost"}`}>
+              {issue.assignee && (
+                <span className="text-[10px] text-base-content/40 shrink-0">{issue.assignee}</span>
+              )}
+              {issue.labels && issue.labels.length > 0 && (
+                <div className="flex gap-1 shrink-0">
+                  {issue.labels.slice(0, 2).map((l) => (
+                    <span
+                      key={l.id}
+                      className="text-[9px] px-1.5 py-0.5 rounded-full"
+                      style={{ backgroundColor: l.color + "20", color: l.color }}
+                    >
+                      {l.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <span className={`badge badge-xs shrink-0 ${statusColors[issue.status] ?? "badge-ghost"}`}>
                 {issue.status}
               </span>
             </label>

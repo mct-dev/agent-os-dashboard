@@ -139,12 +139,26 @@ export interface LinearSearchResult {
   assignee: string | null
   team: { key: string }
   number: number
+  labels?: { id: string; name: string; color: string }[]
 }
 
 export interface LinearTeam {
   id: string
   name: string
   key: string
+}
+
+export interface LinearUser {
+  id: string
+  name: string
+  email: string
+  displayName: string
+}
+
+export interface LinearLabel {
+  id: string
+  name: string
+  color: string
 }
 
 export const LLM_MODELS = [
