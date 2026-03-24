@@ -241,8 +241,8 @@ export function TaskPanel() {
                   value={runPrompt}
                   onChange={(e) => setRunPrompt(e.target.value)}
                   placeholder="Prompt for the agent..."
-                  className="text-sm min-h-[60px] resize-none font-mono"
-                  rows={3}
+                  className="text-sm min-h-[120px] resize-y font-mono rounded-md"
+                  rows={5}
                 />
                 <Button
                   className="w-full"
@@ -362,8 +362,8 @@ export function TaskPanel() {
                   onChange={(e) => updateTaskLocal({ description: e.target.value || null })}
                   onBlur={(e) => handleDescriptionBlur(e.target.value)}
                   placeholder="Add a description..."
-                  className="text-sm min-h-[100px] resize-none"
-                  rows={4}
+                  className="text-sm min-h-[140px] resize-y rounded-md"
+                  rows={6}
                 />
               </div>
 
