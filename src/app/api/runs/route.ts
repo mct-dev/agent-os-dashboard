@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Fetch context for system prompt
-  const [previousRuns, recentComments, project, linearLinks] = await Promise.all([
+  const [previousRuns, recentComments, project, linearLinks, sop] = await Promise.all([
     prisma.agentRun.findMany({
       where: { taskId },
       orderBy: { startedAt: "desc" },
@@ -52,6 +52,9 @@ export async function POST(req: NextRequest) {
       ? prisma.project.findUnique({ where: { id: task.projectId }, select: { name: true } })
       : null,
     prisma.linearLink.findMany({ where: { taskId } }),
+    task.sopId
+      ? prisma.sop.findUnique({ where: { id: task.sopId }, include: { stages: { orderBy: { sortOrder: "asc" } } } })
+      : null,
   ])
 
   // Create AgentRun record first (need the ID for system prompt)
@@ -80,6 +83,14 @@ export async function POST(req: NextRequest) {
     projectName: project?.name ?? null,
     status: task.status,
     priority: task.priority,
+    sopName: sop?.name ?? null,
+    sopDescription: sop?.description ?? null,
+    sopStages: (sop?.stages ?? []).map((s) => ({
+      name: s.name,
+      role: s.role,
+      prompt: s.prompt,
+      sortOrder: s.sortOrder,
+    })),
     linearLinks: linearLinks.map((l) => ({
       teamKey: l.linearTeamKey,
       issueNumber: l.linearIssueNumber,

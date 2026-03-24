@@ -150,6 +150,9 @@ export async function POST(req: NextRequest) {
           projectName: task?.project?.name ?? null,
           status: task?.status ?? "TODO",
           priority: task?.priority ?? "MEDIUM",
+          sopName: null,
+          sopDescription: null,
+          sopStages: [],
           linearLinks: [],
           previousRuns: prevRuns.map((r) => ({
             model: r.model,
