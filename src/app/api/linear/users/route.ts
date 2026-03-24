@@ -13,13 +13,15 @@ export async function GET() {
     return NextResponse.json({ error: "Linear not connected" }, { status: 400 })
   }
 
-  const users = await client.users()
-  const result = users.nodes.map((u) => ({
-    id: u.id,
-    name: u.name,
-    email: u.email,
-    displayName: u.displayName,
-  }))
+  const users = await client.users({ first: 250 })
+  const result = users.nodes
+    .filter((u) => u.active)
+    .map((u) => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      displayName: u.displayName,
+    }))
 
   return NextResponse.json(result)
 }

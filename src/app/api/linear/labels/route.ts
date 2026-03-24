@@ -13,7 +13,7 @@ export async function GET() {
     return NextResponse.json({ error: "Linear not connected" }, { status: 400 })
   }
 
-  const labels = await client.issueLabels({ first: 100 })
+  const labels = await client.issueLabels({ first: 250 })
   const result = labels.nodes.map((l) => ({
     id: l.id,
     name: l.name,

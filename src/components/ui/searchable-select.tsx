@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 
@@ -29,11 +29,14 @@ export function SearchableSelect({
 }: SearchableSelectProps) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
+  const [highlightIndex, setHighlightIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (open) {
       setSearch("")
+      setHighlightIndex(0)
       setTimeout(() => inputRef.current?.focus(), 0)
     }
   }, [open])
@@ -41,6 +44,46 @@ export function SearchableSelect({
   const filtered = search
     ? options.filter((o) => o.label.toLowerCase().includes(search.toLowerCase()))
     : options
+
+  // "all" is index 0, then filtered options are 1..N
+  const totalItems = filtered.length + 1
+
+  // Reset highlight when search changes
+  useEffect(() => {
+    setHighlightIndex(0)
+  }, [search])
+
+  // Scroll highlighted item into view
+  useEffect(() => {
+    if (!listRef.current) return
+    const item = listRef.current.children[highlightIndex] as HTMLElement
+    if (item) item.scrollIntoView({ block: "nearest" })
+  }, [highlightIndex])
+
+  const select = useCallback((idx: number) => {
+    if (idx === 0) {
+      onValueChange("all")
+    } else {
+      const opt = filtered[idx - 1]
+      if (opt) onValueChange(opt.value)
+    }
+    setOpen(false)
+  }, [filtered, onValueChange])
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault()
+      setHighlightIndex((prev) => Math.min(prev + 1, totalItems - 1))
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault()
+      setHighlightIndex((prev) => Math.max(prev - 1, 0))
+    } else if (e.key === "Enter") {
+      e.preventDefault()
+      select(highlightIndex)
+    } else if (e.key === "Escape") {
+      setOpen(false)
+    }
+  }, [totalItems, highlightIndex, select])
 
   const selectedLabel = value === "all"
     ? allLabel
@@ -70,28 +113,33 @@ export function SearchableSelect({
             placeholder="Search..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
         </div>
-        <div className="max-h-48 overflow-y-auto px-1 pb-1">
+        <div ref={listRef} className="max-h-48 overflow-y-auto px-1 pb-1">
           <button
             type="button"
             className={cn(
-              "w-full text-left text-xs px-2 py-1.5 rounded hover:bg-base-200 transition-colors",
-              value === "all" && "bg-primary/10 text-primary"
+              "w-full text-left text-xs px-2 py-1.5 rounded transition-colors",
+              highlightIndex === 0 ? "bg-base-200" : "hover:bg-base-200",
+              value === "all" && "text-primary"
             )}
-            onClick={() => { onValueChange("all"); setOpen(false) }}
+            onClick={() => select(0)}
+            onMouseEnter={() => setHighlightIndex(0)}
           >
             {allLabel}
           </button>
-          {filtered.map((opt) => (
+          {filtered.map((opt, i) => (
             <button
               key={opt.value}
               type="button"
               className={cn(
-                "w-full text-left text-xs px-2 py-1.5 rounded hover:bg-base-200 transition-colors flex items-center gap-1.5",
-                value === opt.value && "bg-primary/10 text-primary"
+                "w-full text-left text-xs px-2 py-1.5 rounded transition-colors flex items-center gap-1.5",
+                highlightIndex === i + 1 ? "bg-base-200" : "hover:bg-base-200",
+                value === opt.value && "text-primary"
               )}
-              onClick={() => { onValueChange(opt.value); setOpen(false) }}
+              onClick={() => select(i + 1)}
+              onMouseEnter={() => setHighlightIndex(i + 1)}
             >
               {opt.icon}
               <span className="truncate">{opt.label}</span>
