@@ -22,25 +22,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Task not found" }, { status: 404 })
   }
 
-  // Inject Linear ticket context into prompt
-  let enrichedPrompt = prompt
-  try {
-    const linearLinks = await prisma.linearLink.findMany({
-      where: { taskId },
-    })
-    if (linearLinks.length > 0) {
-      const ticketLines = linearLinks
-        .map(
-          (link) =>
-            `- ${link.linearTeamKey}-${link.linearIssueNumber}: "${link.linearTitle}" (${link.linearStatus ?? "Unknown"}) — ${link.linearIssueUrl}`
-        )
-        .join("\n")
-      enrichedPrompt = `${prompt}\n\n---\nLINKED LINEAR TICKETS:\n${ticketLines}\n\nThese Linear tickets are linked to this task. Refer to them for additional context.\nIf you have access to Linear via MCP, you can query them for real-time details.\n---`
-    }
-  } catch (e) {
-    console.warn("Failed to fetch linear links for context injection:", e)
-  }
-
   // Get user's bridge settings
   const settings = await prisma.userSettings.findUnique({
     where: { userId: session.user.email },
@@ -53,6 +34,26 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  // Fetch context for system prompt
+  const [previousRuns, recentComments, project, linearLinks] = await Promise.all([
+    prisma.agentRun.findMany({
+      where: { taskId },
+      orderBy: { startedAt: "desc" },
+      take: 3,
+      select: { model: true, status: true, startedAt: true, prompt: true },
+    }),
+    prisma.comment.findMany({
+      where: { taskId },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: { body: true, createdAt: true, agentId: true, userId: true },
+    }),
+    task.projectId
+      ? prisma.project.findUnique({ where: { id: task.projectId }, select: { name: true } })
+      : null,
+    prisma.linearLink.findMany({ where: { taskId } }),
+  ])
+
   // Create AgentRun record first (need the ID for system prompt)
   const run = await prisma.agentRun.create({
     data: {
@@ -63,7 +64,10 @@ export async function POST(req: NextRequest) {
     },
   })
 
-  // Build system prompt with agent-os context
+  // Check if this is a session resume (bridge tracks sessions per task)
+  const isResume = previousRuns.length > 0
+
+  // Build system prompt with full context
   const dashboardUrl = process.env.NEXTAUTH_URL ?? ""
   const apiKey = process.env.ICARUS_API_KEY ?? ""
   const systemPrompt = buildAgentSystemPrompt({
@@ -71,7 +75,30 @@ export async function POST(req: NextRequest) {
     apiKey,
     taskId,
     taskTitle: task.title,
+    taskDescription: task.description,
     agentRunId: run.id,
+    projectName: project?.name ?? null,
+    status: task.status,
+    priority: task.priority,
+    linearLinks: linearLinks.map((l) => ({
+      teamKey: l.linearTeamKey,
+      issueNumber: l.linearIssueNumber,
+      title: l.linearTitle,
+      status: l.linearStatus,
+      url: l.linearIssueUrl,
+    })),
+    previousRuns: previousRuns.map((r) => ({
+      model: r.model,
+      status: r.status,
+      startedAt: r.startedAt.toISOString(),
+      prompt: r.prompt,
+    })),
+    recentComments: recentComments.reverse().map((c) => ({
+      body: c.body,
+      createdAt: c.createdAt.toISOString(),
+      isAgent: !!c.agentId,
+    })),
+    isResume,
   })
 
   // Dispatch run to the user's bridge
@@ -92,7 +119,7 @@ export async function POST(req: NextRequest) {
         task_title: task.title,
         task_description: task.description ?? "",
         sop_id: task.sopId ?? "",
-        prompt: enrichedPrompt,
+        prompt,
         model,
         cwd: settings.defaultCwd || undefined,
         system_prompt: systemPrompt,

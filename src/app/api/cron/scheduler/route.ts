@@ -117,16 +117,54 @@ export async function POST(req: NextRequest) {
         },
       })
 
-      // Build system prompt
+      // Build system prompt with context
       const dashboardUrl = process.env.NEXTAUTH_URL ?? ""
       const apiKey = process.env.ICARUS_API_KEY ?? ""
-      const systemPrompt = taskId ? buildAgentSystemPrompt({
-        dashboardUrl,
-        apiKey,
-        taskId,
-        taskTitle,
-        agentRunId: agentRun.id,
-      }) : undefined
+      let systemPrompt: string | undefined
+      if (taskId) {
+        const [prevRuns, comments, task] = await Promise.all([
+          prisma.agentRun.findMany({
+            where: { taskId },
+            orderBy: { startedAt: "desc" },
+            take: 3,
+            select: { model: true, status: true, startedAt: true, prompt: true },
+          }),
+          prisma.comment.findMany({
+            where: { taskId },
+            orderBy: { createdAt: "desc" },
+            take: 10,
+            select: { body: true, createdAt: true, agentId: true, userId: true },
+          }),
+          prisma.task.findUnique({
+            where: { id: taskId },
+            include: { project: { select: { name: true } } },
+          }),
+        ])
+        systemPrompt = buildAgentSystemPrompt({
+          dashboardUrl,
+          apiKey,
+          taskId,
+          taskTitle,
+          taskDescription: task?.description ?? null,
+          agentRunId: agentRun.id,
+          projectName: task?.project?.name ?? null,
+          status: task?.status ?? "TODO",
+          priority: task?.priority ?? "MEDIUM",
+          linearLinks: [],
+          previousRuns: prevRuns.map((r) => ({
+            model: r.model,
+            status: r.status,
+            startedAt: r.startedAt.toISOString(),
+            prompt: r.prompt,
+          })),
+          recentComments: comments.reverse().map((c) => ({
+            body: c.body,
+            createdAt: c.createdAt.toISOString(),
+            isAgent: !!c.agentId,
+          })),
+          isResume: prevRuns.length > 0,
+        })
+      }
 
       // Dispatch to bridge
       let bridgeRunId: string | null = null
