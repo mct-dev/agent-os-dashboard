@@ -1,19 +1,13 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { SearchableSelect } from "@/components/ui/searchable-select"
 import { LinearIcon } from "@/components/linear-icon"
 import { searchLinearIssues, fetchLinearTeams, fetchLinearUsers, fetchLinearLabels } from "@/lib/api-client"
 import type { LinearSearchResult, LinearTeam, LinearUser, LinearLabel } from "@/lib/types"
@@ -92,6 +86,22 @@ export function LinearSearchModal({
     onOpenChange(false)
   }
 
+  const teamOptions = useMemo(() => teams.map((t) => ({
+    value: t.id,
+    label: `${t.key} — ${t.name}`,
+  })), [teams])
+
+  const userOptions = useMemo(() => users.map((u) => ({
+    value: u.id,
+    label: u.displayName || u.name,
+  })), [users])
+
+  const labelOptions = useMemo(() => labels.map((l) => ({
+    value: l.id,
+    label: l.name,
+    icon: <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: l.color }} />,
+  })), [labels])
+
   const statusColors: Record<string, string> = {
     "In Progress": "badge-warning",
     Todo: "badge-info",
@@ -118,51 +128,30 @@ export function LinearSearchModal({
             onChange={(e) => setQuery(e.target.value)}
           />
           <div className="flex gap-2">
-            <Select value={teamId} onValueChange={setTeamId}>
-              <SelectTrigger className="h-7 text-xs flex-1">
-                <SelectValue placeholder="All Teams" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Teams</SelectItem>
-                {teams.map((t) => (
-                  <SelectItem key={t.id} value={t.id}>
-                    {t.key} — {t.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={assigneeId} onValueChange={setAssigneeId}>
-              <SelectTrigger className="h-7 text-xs flex-1">
-                <SelectValue placeholder="All Assignees" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Assignees</SelectItem>
-                {users.map((u) => (
-                  <SelectItem key={u.id} value={u.id}>
-                    {u.displayName || u.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={labelId} onValueChange={setLabelId}>
-              <SelectTrigger className="h-7 text-xs flex-1">
-                <SelectValue placeholder="All Labels" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Labels</SelectItem>
-                {labels.map((l) => (
-                  <SelectItem key={l.id} value={l.id}>
-                    <span className="flex items-center gap-1.5">
-                      <span
-                        className="w-2 h-2 rounded-full shrink-0"
-                        style={{ backgroundColor: l.color }}
-                      />
-                      {l.name}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <SearchableSelect
+              value={teamId}
+              onValueChange={setTeamId}
+              options={teamOptions}
+              allLabel="All Teams"
+              placeholder="Team"
+              className="flex-1"
+            />
+            <SearchableSelect
+              value={assigneeId}
+              onValueChange={setAssigneeId}
+              options={userOptions}
+              allLabel="All Assignees"
+              placeholder="Assignee"
+              className="flex-1"
+            />
+            <SearchableSelect
+              value={labelId}
+              onValueChange={setLabelId}
+              options={labelOptions}
+              allLabel="All Labels"
+              placeholder="Label"
+              className="flex-1"
+            />
           </div>
         </div>
 
