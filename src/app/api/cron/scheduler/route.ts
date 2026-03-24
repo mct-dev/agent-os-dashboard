@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { computeNextRunAt } from "@/lib/schedule-utils"
+import { buildAgentSystemPrompt } from "@/lib/agent-system-prompt"
 import type { SchedulePreset } from "@/lib/types"
 
 export async function POST(req: NextRequest) {
@@ -101,6 +102,32 @@ export async function POST(req: NextRequest) {
         }).catch(() => {}) // ignore if task doesn't exist
       }
 
+      // Create AgentRun record first (need the ID for system prompt)
+      const taskTitle = taskId
+        ? (await prisma.task.findUnique({ where: { id: taskId } }))?.title ?? job.name
+        : job.name
+
+      const agentRun = await prisma.agentRun.create({
+        data: {
+          taskId: taskId ?? undefined,
+          status: "PENDING",
+          model: job.model,
+          prompt: job.prompt,
+          scheduledJobId: job.id,
+        },
+      })
+
+      // Build system prompt
+      const dashboardUrl = process.env.NEXTAUTH_URL ?? ""
+      const apiKey = process.env.ICARUS_API_KEY ?? ""
+      const systemPrompt = taskId ? buildAgentSystemPrompt({
+        dashboardUrl,
+        apiKey,
+        taskId,
+        taskTitle,
+        agentRunId: agentRun.id,
+      }) : undefined
+
       // Dispatch to bridge
       let bridgeRunId: string | null = null
       try {
@@ -114,15 +141,14 @@ export async function POST(req: NextRequest) {
           },
           body: JSON.stringify({
             task_id: taskId,
-            task_title: taskId
-              ? (await prisma.task.findUnique({ where: { id: taskId } }))?.title ?? job.name
-              : job.name,
+            task_title: taskTitle,
             task_description: "",
             prompt: job.prompt,
             model: job.model,
-            callback_url: `${process.env.NEXTAUTH_URL ?? ""}/api/runs/callback`,
-            callback_api_key: process.env.ICARUS_API_KEY ?? "",
+            callback_url: `${dashboardUrl}/api/runs/callback`,
+            callback_api_key: apiKey,
             cwd: userSettings.defaultCwd || undefined,
+            system_prompt: systemPrompt,
           }),
           signal: runController.signal,
         })
@@ -136,15 +162,13 @@ export async function POST(req: NextRequest) {
         // Bridge dispatch failed; still record the run attempt
       }
 
-      // Create AgentRun record
-      await prisma.agentRun.create({
+      // Update run with bridge ID and status
+      await prisma.agentRun.update({
+        where: { id: agentRun.id },
         data: {
-          taskId: taskId ?? undefined,
           bridgeRunId,
-          status: "RUNNING",
-          model: job.model,
-          prompt: job.prompt,
-          scheduledJobId: job.id,
+          status: bridgeRunId ? "RUNNING" : "FAILED",
+          ...(bridgeRunId ? {} : { endedAt: new Date() }),
         },
       })
 

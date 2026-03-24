@@ -11,6 +11,7 @@ export async function spawnClaudeRun(run: {
   prompt: string
   model?: string
   cwd?: string
+  system_prompt?: string
   callback_url?: string
   callback_api_key?: string
 }) {
@@ -37,6 +38,10 @@ export async function spawnClaudeRun(run: {
     // Strip provider prefix (e.g., "anthropic/claude-opus-4-6" → "claude-opus-4-6")
     const modelId = run.model.includes("/") ? run.model.split("/").pop()! : run.model
     args.push("--model", modelId)
+  }
+
+  if (run.system_prompt) {
+    args.push("--system-prompt", run.system_prompt)
   }
 
   // Mark as running

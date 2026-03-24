@@ -57,6 +57,7 @@ async function main() {
       cwd,
       callback_url,
       callback_api_key,
+      system_prompt,
     } = req.body
     if (!task_id || !prompt)
       return res.status(400).json({ error: "task_id and prompt required" })
@@ -88,6 +89,7 @@ async function main() {
       prompt,
       model,
       cwd,
+      system_prompt,
       callback_url,
       callback_api_key,
     }).catch((err) => {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
+import { buildAgentSystemPrompt } from "@/lib/agent-system-prompt"
 
 export async function POST(req: NextRequest) {
   const session = await auth()
@@ -52,6 +53,27 @@ export async function POST(req: NextRequest) {
     )
   }
 
+  // Create AgentRun record first (need the ID for system prompt)
+  const run = await prisma.agentRun.create({
+    data: {
+      taskId,
+      status: "PENDING",
+      model: model ?? "anthropic/claude-opus-4-6",
+      prompt: prompt ?? null,
+    },
+  })
+
+  // Build system prompt with agent-os context
+  const dashboardUrl = process.env.NEXTAUTH_URL ?? ""
+  const apiKey = process.env.ICARUS_API_KEY ?? ""
+  const systemPrompt = buildAgentSystemPrompt({
+    dashboardUrl,
+    apiKey,
+    taskId,
+    taskTitle: task.title,
+    agentRunId: run.id,
+  })
+
   // Dispatch run to the user's bridge
   const bridgeUrl = settings.bridgeUrl.replace(/\/+$/, "")
   let bridgeResponse: Response
@@ -73,12 +95,15 @@ export async function POST(req: NextRequest) {
         prompt: enrichedPrompt,
         model,
         cwd: settings.defaultCwd || undefined,
+        system_prompt: systemPrompt,
       }),
       signal: controller.signal,
     })
 
     clearTimeout(timeout)
   } catch (err: unknown) {
+    // Mark run as failed
+    await prisma.agentRun.update({ where: { id: run.id }, data: { status: "FAILED", endedAt: new Date() } })
     const message =
       err instanceof Error && err.name === "AbortError"
         ? "Bridge connection timed out"
@@ -87,6 +112,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (!bridgeResponse.ok) {
+    await prisma.agentRun.update({ where: { id: run.id }, data: { status: "FAILED", endedAt: new Date() } })
     const text = await bridgeResponse.text().catch(() => "Unknown bridge error")
     return NextResponse.json(
       { error: `Bridge returned ${bridgeResponse.status}: ${text}` },
@@ -96,25 +122,23 @@ export async function POST(req: NextRequest) {
 
   const bridgeData = await bridgeResponse.json()
 
-  // Create AgentRun record in Supabase
-  const run = await prisma.agentRun.create({
+  // Update run with bridge ID and mark as running
+  const updatedRun = await prisma.agentRun.update({
+    where: { id: run.id },
     data: {
-      taskId,
       bridgeRunId: bridgeData.runId ?? bridgeData.id ?? null,
       status: "RUNNING",
-      model: model ?? "anthropic/claude-opus-4-6",
-      prompt: prompt ?? null,
     },
   })
 
   return NextResponse.json(
     {
-      id: run.id,
-      taskId: run.taskId,
-      bridgeRunId: run.bridgeRunId,
-      status: run.status,
-      model: run.model,
-      startedAt: run.startedAt.toISOString(),
+      id: updatedRun.id,
+      taskId: updatedRun.taskId,
+      bridgeRunId: updatedRun.bridgeRunId,
+      status: updatedRun.status,
+      model: updatedRun.model,
+      startedAt: updatedRun.startedAt.toISOString(),
     },
     { status: 201 }
   )
