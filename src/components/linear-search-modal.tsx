@@ -7,10 +7,26 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { SearchableSelect } from "@/components/ui/searchable-select"
 import { LinearIcon } from "@/components/linear-icon"
-import { searchLinearIssues, fetchLinearTeams, fetchLinearUsers, fetchLinearLabels } from "@/lib/api-client"
+import {
+  searchLinearIssues,
+  fetchLinearTeams,
+  fetchLinearUsers,
+  fetchLinearLabels,
+  fetchLinearStatuses,
+} from "@/lib/api-client"
 import type { LinearSearchResult, LinearTeam, LinearUser, LinearLabel } from "@/lib/types"
+import type { LinearStatus } from "@/lib/api-client"
+
+type SortKey = "updated" | "priority" | "created" | "identifier"
 
 interface LinearSearchModalProps {
   open: boolean
@@ -31,9 +47,12 @@ export function LinearSearchModal({
   const [teamId, setTeamId] = useState("all")
   const [assigneeId, setAssigneeId] = useState("all")
   const [labelId, setLabelId] = useState("all")
+  const [statusName, setStatusName] = useState("all")
+  const [sortBy, setSortBy] = useState<SortKey>("updated")
   const [teams, setTeams] = useState<LinearTeam[]>([])
   const [users, setUsers] = useState<LinearUser[]>([])
   const [labels, setLabels] = useState<LinearLabel[]>([])
+  const [statuses, setStatuses] = useState<LinearStatus[]>([])
   const [results, setResults] = useState<LinearSearchResult[]>([])
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(false)
@@ -43,6 +62,7 @@ export function LinearSearchModal({
       fetchLinearTeams().then(setTeams).catch(() => {})
       fetchLinearUsers().then(setUsers).catch(() => {})
       fetchLinearLabels().then(setLabels).catch(() => {})
+      fetchLinearStatuses().then(setStatuses).catch(() => {})
     }
   }, [open])
 
@@ -54,6 +74,7 @@ export function LinearSearchModal({
         teamId: teamId !== "all" ? teamId : undefined,
         assigneeId: assigneeId !== "all" ? assigneeId : undefined,
         labelId: labelId !== "all" ? labelId : undefined,
+        statusName: statusName !== "all" ? statusName : undefined,
       })
       setResults(issues)
     } catch {
@@ -61,13 +82,33 @@ export function LinearSearchModal({
     } finally {
       setLoading(false)
     }
-  }, [query, teamId, assigneeId, labelId])
+  }, [query, teamId, assigneeId, labelId, statusName])
 
   useEffect(() => {
     if (!open) return
     const timer = setTimeout(search, 300)
     return () => clearTimeout(timer)
-  }, [query, teamId, assigneeId, labelId, open, search])
+  }, [query, teamId, assigneeId, labelId, statusName, open, search])
+
+  const sortedResults = useMemo(() => {
+    const sorted = [...results]
+    switch (sortBy) {
+      case "priority":
+        sorted.sort((a, b) => a.priority - b.priority)
+        break
+      case "created":
+        sorted.sort((a, b) => b.number - a.number)
+        break
+      case "identifier":
+        sorted.sort((a, b) => a.identifier.localeCompare(b.identifier))
+        break
+      case "updated":
+      default:
+        // API returns in updated order by default
+        break
+    }
+    return sorted
+  }, [results, sortBy])
 
   function toggleIssue(id: string) {
     setSelected((prev) => {
@@ -101,6 +142,12 @@ export function LinearSearchModal({
     label: l.name,
     icon: <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: l.color }} />,
   })), [labels])
+
+  const statusOptions = useMemo(() => statuses.map((s) => ({
+    value: s.name,
+    label: s.name,
+    icon: <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: s.color }} />,
+  })), [statuses])
 
   const statusColors: Record<string, string> = {
     "In Progress": "badge-warning",
@@ -145,6 +192,14 @@ export function LinearSearchModal({
               className="flex-1"
             />
             <SearchableSelect
+              value={statusName}
+              onValueChange={setStatusName}
+              options={statusOptions}
+              allLabel="All Statuses"
+              placeholder="Status"
+              className="flex-1"
+            />
+            <SearchableSelect
               value={labelId}
               onValueChange={setLabelId}
               options={labelOptions}
@@ -155,16 +210,36 @@ export function LinearSearchModal({
           </div>
         </div>
 
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] text-base-content/40">
+            {results.length} result{results.length !== 1 ? "s" : ""}
+          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-base-content/40">Sort:</span>
+            <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortKey)}>
+              <SelectTrigger className="h-6 text-[11px] w-28 border-base-300">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="updated">Last Updated</SelectItem>
+                <SelectItem value="priority">Priority</SelectItem>
+                <SelectItem value="created">Newest First</SelectItem>
+                <SelectItem value="identifier">Identifier</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
         <div className="flex-1 overflow-y-auto border border-base-300 rounded-lg divide-y divide-base-300">
           {loading && (
             <div className="p-4 text-center text-sm text-base-content/50">Searching...</div>
           )}
-          {!loading && results.length === 0 && (
+          {!loading && sortedResults.length === 0 && (
             <div className="p-4 text-center text-sm text-base-content/50">
               {query ? "No issues found" : "Type to search or use filters"}
             </div>
           )}
-          {results.map((issue) => (
+          {sortedResults.map((issue) => (
             <label
               key={issue.id}
               className={`flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-base-200 transition-colors ${

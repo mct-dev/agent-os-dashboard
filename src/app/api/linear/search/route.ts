@@ -17,11 +17,13 @@ export async function GET(req: NextRequest) {
   const teamId = req.nextUrl.searchParams.get("teamId")
   const assigneeId = req.nextUrl.searchParams.get("assigneeId")
   const labelId = req.nextUrl.searchParams.get("labelId")
+  const statusName = req.nextUrl.searchParams.get("statusName")
 
   const filter: Record<string, unknown> = {}
   if (teamId) filter.team = { id: { eq: teamId } }
   if (assigneeId) filter.assignee = { id: { eq: assigneeId } }
   if (labelId) filter.labels = { some: { id: { eq: labelId } } }
+  if (statusName) filter.state = { name: { eq: statusName } }
 
   let issues
   if (q.trim()) {

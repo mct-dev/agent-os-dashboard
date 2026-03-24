@@ -420,17 +420,31 @@ export async function fetchLinearLabels(): Promise<LinearLabel[]> {
   return res.json()
 }
 
+export interface LinearStatus {
+  name: string
+  color: string
+  type: string
+}
+
+export async function fetchLinearStatuses(): Promise<LinearStatus[]> {
+  const res = await fetch("/api/linear/statuses")
+  if (!res.ok) throw new Error("Failed to fetch Linear statuses")
+  return res.json()
+}
+
 export async function searchLinearIssues(params: {
   q?: string
   teamId?: string
   assigneeId?: string
   labelId?: string
+  statusName?: string
 }): Promise<LinearSearchResult[]> {
   const query = new URLSearchParams()
   if (params.q) query.set("q", params.q)
   if (params.teamId) query.set("teamId", params.teamId)
   if (params.assigneeId) query.set("assigneeId", params.assigneeId)
   if (params.labelId) query.set("labelId", params.labelId)
+  if (params.statusName) query.set("statusName", params.statusName)
   const res = await fetch(`/api/linear/search?${query}`)
   if (!res.ok) throw new Error("Failed to search Linear issues")
   return res.json()
